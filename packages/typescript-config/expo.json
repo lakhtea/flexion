@@ -1,14 +1,10 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
-  "extends": "./base.json",
+  "extends": ["./base.json", "expo/tsconfig.base"],
   "compilerOptions": {
-    "plugins": [{ "name": "next" }],
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "jsx": "react-native",
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "allowJs": true,
-    "incremental": true,
-    "jsx": "preserve",
     "noEmit": true,
     "paths": {
       "@/*": ["./*"]
