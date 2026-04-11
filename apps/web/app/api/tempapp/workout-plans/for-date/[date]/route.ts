@@ -103,7 +103,7 @@ export async function GET(
     }
 
     if (!plan) {
-      return Response.json(null);
+      return Response.json({ error: "No plan for this date" }, { status: 404 });
     }
 
     const hydrated = await hydratePlan(plan);
