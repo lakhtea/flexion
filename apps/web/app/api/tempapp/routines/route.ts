@@ -1,4 +1,5 @@
 import { dbAll, dbGet, dbRun, ensureSchema } from "@/lib/tempapp/db";
+import type { RoutineBlock, RoutineExercise } from "@/lib/tempapp/types";
 import crypto from "crypto";
 
 export const dynamic = "force-dynamic";
@@ -9,7 +10,39 @@ export async function GET() {
     const routines = await dbAll(
       "SELECT * FROM routines ORDER BY created_at DESC"
     );
-    return Response.json(routines);
+
+    // Hydrate each routine with its blocks and exercises
+    const hydrated = await Promise.all(
+      routines.map(async (routine: Record<string, unknown>) => {
+        const blocks = await dbAll<RoutineBlock>(
+          "SELECT * FROM routine_blocks WHERE routine_id = ? ORDER BY sort_order ASC",
+          [routine.id as string]
+        );
+
+        const hydratedBlocks = await Promise.all(
+          blocks.map(async (block) => {
+            const exercises = await dbAll<RoutineExercise>(
+              "SELECT * FROM routine_exercises WHERE routine_block_id = ? ORDER BY sort_order ASC",
+              [block.id]
+            );
+            const hydratedExercises = await Promise.all(
+              exercises.map(async (re) => {
+                const exercise = await dbGet(
+                  "SELECT * FROM exercises WHERE id = ?",
+                  [re.exercise_id]
+                );
+                return { ...re, exercise: exercise ?? null };
+              })
+            );
+            return { ...block, exercises: hydratedExercises };
+          })
+        );
+
+        return { ...routine, blocks: hydratedBlocks };
+      })
+    );
+
+    return Response.json(hydrated);
   } catch (e) {
     return Response.json(
       { error: e instanceof Error ? e.message : "Unknown error" },
