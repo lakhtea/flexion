@@ -1,0 +1,197 @@
+/* routines/page.module.css */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.newRoutineForm {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.routineHeader {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.routineHeaderExpanded {
+  composes: routineHeader;
+  border-bottom: 1px solid var(--border);
+}
+
+.routineName {
+  font-weight: 600;
+  flex: 1;
+  font-size: 16px;
+}
+
+.routineDesc {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.routineMeta {
+  font-size: 12px;
+  color: #999;
+}
+
+.detailBody {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.applyForm {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.applyLabel {
+  font-size: 13px;
+}
+
+.addBlockForm {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  padding: 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.blockNameInput {
+  flex: 1;
+}
+
+.blockCard {
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+}
+
+.blockHeader {
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.blockName {
+  font-weight: 600;
+  flex: 1;
+}
+
+.exerciseRow {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 13px;
+}
+
+.exerciseName {
+  font-weight: 500;
+}
+
+.searchArea {
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.searchRow {
+  display: flex;
+  gap: 8px;
+}
+
+.searchInput {
+  flex: 1;
+}
+
+.searchResults {
+  border: 1px solid var(--border);
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.searchResultItem {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.searchResultItem:hover {
+  background: var(--bg-secondary);
+}
+
+.searchResultEquipment {
+  color: var(--muted);
+}
+
+.addExerciseWrap {
+  padding: 8px 12px;
+}
+
+.addExerciseBtn {
+  padding: 4px 12px;
+  border: 1px dashed var(--border);
+  background: var(--bg);
+  cursor: pointer;
+  color: var(--accent);
+  font-size: 12px;
+  width: 100%;
+}
+
+.addExerciseBtn:hover {
+  background: var(--bg-secondary);
+}
+
+.emptyBlocks {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+@media (max-width: 599px) {
+  .applyForm {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .addBlockForm {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .actionButtons {
+    flex-direction: column;
+  }
+
+  .actionButtons > * {
+    width: 100%;
+  }
+}

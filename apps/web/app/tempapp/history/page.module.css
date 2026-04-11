@@ -1,0 +1,112 @@
+/* history/page.module.css */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.filterBar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  padding: 16px;
+}
+
+.historyHeader {
+  display: none;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  gap: 8px;
+}
+
+.historyRow {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.historyRowSkipped {
+  composes: historyRow;
+  opacity: 0.5;
+}
+
+.historyLabel {
+  font-size: 11px;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.exerciseLink {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.exerciseLink:hover {
+  text-decoration: underline;
+}
+
+.dateCell {
+  color: var(--muted);
+}
+
+.commentCell {
+  color: var(--muted);
+}
+
+.emptyText {
+  padding: 16px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.loadMoreWrap {
+  display: flex;
+  justify-content: center;
+}
+
+.recordCount {
+  font-size: 12px;
+  color: #999;
+}
+
+@media (min-width: 600px) {
+  .filterBar {
+    flex-direction: row;
+    align-items: flex-end;
+  }
+
+  .historyHeader {
+    display: grid;
+    grid-template-columns: 100px 1fr 100px 80px 80px 80px 60px 1fr;
+  }
+
+  .historyRow,
+  .historyRowSkipped {
+    display: grid;
+    grid-template-columns: 100px 1fr 100px 80px 80px 80px 60px 1fr;
+    flex-direction: row;
+    gap: 8px;
+  }
+
+  .historyLabel {
+    display: none;
+  }
+}
+
+@media (max-width: 599px) {
+  .filterBar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
