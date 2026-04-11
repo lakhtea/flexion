@@ -1,0 +1,6 @@
+.card {
+  border: 1px solid var(--border);
+  background: white;
+  display: flex;
+  flex-direction: column;
+}

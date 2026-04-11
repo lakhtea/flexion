@@ -3,6 +3,15 @@
 import { useState, useEffect, use, useRef } from "react";
 import Link from "next/link";
 import type { Exercise, CompletedExercise } from "@/lib/tempapp/types";
+import {
+  Card,
+  CardHeader,
+  Badge,
+  EmptyState,
+  PageHeader,
+  ListItem,
+} from "../../components";
+import styles from "./page.module.css";
 
 interface HistoryEntry extends CompletedExercise {
   date?: string;
@@ -54,39 +63,18 @@ export default function ExerciseHistoryPage({
     .filter((d) => d.value > 0);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+    <div className={styles.page}>
       <div>
-        <Link
-          href="/tempapp/history"
-          style={{ color: "#2563eb", textDecoration: "none", fontSize: "13px" }}
-        >
+        <Link href="/tempapp/history" className={styles.backLink}>
           &larr; Back to History
         </Link>
-        <h1 className="tempapp-h1" style={{ fontSize: "24px", fontWeight: 700 }}>{exercise.name}</h1>
-        <div style={{ display: "flex", gap: "8px" }}>
+        <PageHeader title={exercise.name} />
+        <div className={styles.badgeRow}>
           {exercise.equipment && (
-            <span
-              style={{
-                fontSize: "12px",
-                background: "#e5e7eb",
-                padding: "2px 8px",
-                color: "#666",
-              }}
-            >
-              {exercise.equipment}
-            </span>
+            <Badge variant="equipment">{exercise.equipment}</Badge>
           )}
           {exercise.context_label && (
-            <span
-              style={{
-                fontSize: "12px",
-                background: "#eff6ff",
-                padding: "2px 8px",
-                color: "#2563eb",
-              }}
-            >
-              {exercise.context_label}
-            </span>
+            <Badge variant="context">{exercise.context_label}</Badge>
           )}
         </div>
       </div>
@@ -98,78 +86,36 @@ export default function ExerciseHistoryPage({
           yLabel={isCardio ? "Time (s)" : "Weight"}
         />
       ) : (
-        <div
-          style={{
-            padding: "24px",
-            background: "#f3f4f6",
-            border: "1px solid #e5e7eb",
-            textAlign: "center",
-            color: "#666",
-          }}
-        >
+        <EmptyState>
           {dataPoints.length === 0
             ? "No data to chart yet."
             : "Need at least 2 data points for a chart."}
-        </div>
+        </EmptyState>
       )}
 
       {/* Full history */}
-      <div
-        style={{
-          border: "1px solid #e5e7eb",
-          background: "white",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        <div
-          style={{
-            padding: "12px 16px",
-            borderBottom: "1px solid #e5e7eb",
-            fontWeight: 600,
-          }}
-        >
-          All Entries ({history.length})
-        </div>
+      <Card>
+        <CardHeader>
+          <span>All Entries ({history.length})</span>
+        </CardHeader>
         {history.length === 0 && (
-          <p style={{ padding: "16px", color: "#666", fontSize: "14px" }}>
+          <p className={styles.emptyText}>
             No history entries.
           </p>
         )}
         {history.map((h, idx) => (
           <div
             key={`${h.id}-${idx}`}
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              padding: "12px 16px",
-              borderBottom: "1px solid #e5e7eb",
-              gap: "4px",
-              opacity: h.skipped ? 0.5 : 1,
-            }}
+            className={h.skipped ? styles.entryItemSkipped : styles.entryItem}
           >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <span style={{ fontWeight: 500, fontSize: "14px" }}>
+            <div className={styles.entryHeader}>
+              <span className={styles.entryDate}>
                 {h.date ?? "Unknown date"}
                 {h.skipped ? " (skipped)" : ""}
               </span>
-              <span
-                style={{
-                  fontSize: "11px",
-                  background: "#e5e7eb",
-                  padding: "1px 6px",
-                }}
-              >
-                {h.block_type}
-              </span>
+              <Badge variant="blockType">{h.block_type}</Badge>
             </div>
-            <div style={{ fontSize: "13px", color: "#555" }}>
+            <div className={styles.entryMetrics}>
               {[
                 h.sets !== null ? `${h.sets} sets` : null,
                 h.reps !== null ? `${h.reps} reps` : null,
@@ -182,11 +128,11 @@ export default function ExerciseHistoryPage({
                 .join(" | ")}
             </div>
             {h.comment && (
-              <div style={{ fontSize: "12px", color: "#666" }}>{h.comment}</div>
+              <div className={styles.entryComment}>{h.comment}</div>
             )}
           </div>
         ))}
-      </div>
+      </Card>
     </div>
   );
 }
@@ -298,19 +244,13 @@ function TrendChart({
   }, [dataPoints, yLabel]);
 
   return (
-    <div
-      style={{
-        border: "1px solid #e5e7eb",
-        background: "white",
-        padding: "16px",
-      }}
-    >
+    <Card className={styles.chartCard}>
       <canvas
         ref={canvasRef}
         width={860}
         height={300}
-        style={{ width: "100%", height: "auto" }}
+        className={styles.canvas}
       />
-    </div>
+    </Card>
   );
 }
