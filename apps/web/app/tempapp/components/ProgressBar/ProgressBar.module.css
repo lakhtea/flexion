@@ -1,0 +1,37 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.labelRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.track {
+  height: 16px;
+  background: var(--border);
+  position: relative;
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.fillBlue { background: var(--accent); }
+.fillGreen { background: var(--success); }
+
+.pct {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 10px;
+  font-weight: 600;
+}

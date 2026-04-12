@@ -1,0 +1,11 @@
+.empty {
+  padding: 24px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  text-align: center;
+  color: var(--muted);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}

@@ -3,6 +3,17 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import type { Exercise, CompletedExercise } from "@/lib/tempapp/types";
+import {
+  Button,
+  Card,
+  FormField,
+  Select,
+  Input,
+  Badge,
+  EmptyState,
+  PageHeader,
+} from "../components";
+import styles from "./page.module.css";
 
 interface CompletedExerciseWithName extends CompletedExercise {
   exercise_name?: string;
@@ -71,123 +82,79 @@ export default function HistoryPage() {
   const exerciseMap = new Map(exercises.map((e) => [e.id, e]));
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-      <h1 className="tempapp-h1" style={{ fontSize: "24px", fontWeight: 700 }}>Workout History</h1>
+    <div className={styles.page}>
+      <PageHeader title="Workout History" />
 
       {/* Filters */}
-      <div
-        className="tempapp-filter-bar"
-        style={{
-          border: "1px solid #e5e7eb",
-          background: "white",
-          padding: "16px",
-          display: "flex",
-          gap: "12px",
-          flexWrap: "wrap",
-          alignItems: "flex-end",
-        }}
-      >
-        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-          <label style={{ fontSize: "12px", color: "#666" }}>Exercise</label>
-          <select
-            className="tempapp-select"
-            value={selectedExercise}
-            onChange={(e) => setSelectedExercise(e.target.value)}
-            style={{ padding: "8px", border: "1px solid #e5e7eb", minWidth: "180px" }}
-            disabled={loadingExercises}
+      <Card>
+        <div className={styles.filterBar}>
+          <FormField label="Exercise" compact>
+            <Select
+              compact
+              value={selectedExercise}
+              onChange={(e) => setSelectedExercise(e.target.value)}
+              disabled={loadingExercises}
+            >
+              <option value="">All exercises</option>
+              {exercises.map((ex) => (
+                <option key={ex.id} value={ex.id}>
+                  {ex.name}
+                  {ex.equipment ? ` (${ex.equipment})` : ""}
+                </option>
+              ))}
+            </Select>
+          </FormField>
+          <FormField label="From" compact>
+            <Input
+              compact
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+            />
+          </FormField>
+          <FormField label="To" compact>
+            <Input
+              compact
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+            />
+          </FormField>
+          <FormField label="Block Type" compact>
+            <Select
+              compact
+              value={blockType}
+              onChange={(e) => setBlockType(e.target.value)}
+            >
+              <option value="">All types</option>
+              <option value="warmup">Warmup</option>
+              <option value="strength">Strength</option>
+              <option value="rehab">Rehab</option>
+              <option value="cardio">Cardio</option>
+              <option value="stretching">Stretching</option>
+              <option value="custom">Custom</option>
+            </Select>
+          </FormField>
+          <Button
+            size="sm"
+            onClick={() => {
+              setSelectedExercise("");
+              setStartDate("");
+              setEndDate("");
+              setBlockType("");
+            }}
           >
-            <option value="">All exercises</option>
-            {exercises.map((ex) => (
-              <option key={ex.id} value={ex.id}>
-                {ex.name}
-                {ex.equipment ? ` (${ex.equipment})` : ""}
-              </option>
-            ))}
-          </select>
+            Clear
+          </Button>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-          <label style={{ fontSize: "12px", color: "#666" }}>From</label>
-          <input
-            className="tempapp-input"
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            style={{ padding: "8px", border: "1px solid #e5e7eb" }}
-          />
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-          <label style={{ fontSize: "12px", color: "#666" }}>To</label>
-          <input
-            className="tempapp-input"
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            style={{ padding: "8px", border: "1px solid #e5e7eb" }}
-          />
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-          <label style={{ fontSize: "12px", color: "#666" }}>Block Type</label>
-          <select
-            className="tempapp-select"
-            value={blockType}
-            onChange={(e) => setBlockType(e.target.value)}
-            style={{ padding: "8px", border: "1px solid #e5e7eb" }}
-          >
-            <option value="">All types</option>
-            <option value="warmup">Warmup</option>
-            <option value="strength">Strength</option>
-            <option value="rehab">Rehab</option>
-            <option value="cardio">Cardio</option>
-            <option value="stretching">Stretching</option>
-            <option value="custom">Custom</option>
-          </select>
-        </div>
-        <button
-          className="touch-btn"
-          onClick={() => {
-            setSelectedExercise("");
-            setStartDate("");
-            setEndDate("");
-            setBlockType("");
-          }}
-          style={{
-            padding: "8px 16px",
-            border: "1px solid #e5e7eb",
-            background: "white",
-            cursor: "pointer",
-            fontSize: "13px",
-          }}
-        >
-          Clear
-        </button>
-      </div>
+      </Card>
 
       {loading && results.length === 0 && <p>Loading...</p>}
 
       {/* Results */}
-      <div
-        style={{
-          border: "1px solid #e5e7eb",
-          background: "white",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
+      <Card>
         {/* Header */}
-        <div
-          className="tempapp-history-header"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "100px 1fr 100px 80px 80px 80px 60px 1fr",
-            padding: "8px 12px",
-            borderBottom: "1px solid #e5e7eb",
-            background: "#f3f4f6",
-            fontSize: "12px",
-            fontWeight: 600,
-            color: "#666",
-            gap: "8px",
-          }}
-        >
+        <div className={styles.historyHeader}>
           <span>Date</span>
           <span>Exercise</span>
           <span>Block</span>
@@ -199,7 +166,7 @@ export default function HistoryPage() {
         </div>
 
         {results.length === 0 && !loading && (
-          <p style={{ padding: "16px", color: "#666", fontSize: "14px" }}>
+          <p className={styles.emptyText}>
             No history records found.
           </p>
         )}
@@ -210,71 +177,45 @@ export default function HistoryPage() {
           return (
             <div
               key={`${r.id}-${idx}`}
-              className="tempapp-history-row"
-              style={{
-                display: "grid",
-                gridTemplateColumns: "100px 1fr 100px 80px 80px 80px 60px 1fr",
-                padding: "8px 12px",
-                borderBottom: "1px solid #e5e7eb",
-                fontSize: "13px",
-                gap: "8px",
-                opacity: r.skipped ? 0.5 : 1,
-              }}
+              className={r.skipped ? styles.historyRowSkipped : styles.historyRow}
             >
-              <span style={{ color: "#666" }}>
-                <span className="history-label">Date: </span>
-                {new Date(r.completed_workout_id).toLocaleDateString() || "—"}
+              <span className={styles.dateCell}>
+                <span className={styles.historyLabel}>Date: </span>
+                {new Date(r.completed_workout_id).toLocaleDateString() || "\u2014"}
               </span>
               <Link
                 href={`/tempapp/history/${r.exercise_id}`}
-                style={{ color: "#2563eb", textDecoration: "none", fontWeight: 500 }}
+                className={styles.exerciseLink}
               >
                 {exName}
                 {r.skipped ? " (skipped)" : ""}
               </Link>
               <span>
-                <span className="history-label">Block: </span>
-                <span
-                  style={{
-                    fontSize: "11px",
-                    background: "#e5e7eb",
-                    padding: "1px 4px",
-                  }}
-                >
-                  {r.block_type}
-                </span>
+                <span className={styles.historyLabel}>Block: </span>
+                <Badge variant="blockType">{r.block_type}</Badge>
               </span>
-              <span><span className="history-label">Sets: </span>{r.sets ?? "—"}</span>
-              <span><span className="history-label">Reps: </span>{r.reps ?? "—"}</span>
+              <span><span className={styles.historyLabel}>Sets: </span>{r.sets ?? "\u2014"}</span>
+              <span><span className={styles.historyLabel}>Reps: </span>{r.reps ?? "\u2014"}</span>
               <span>
-                <span className="history-label">Weight: </span>
-                {r.weight !== null ? `${r.weight} ${r.weight_unit}` : "—"}
+                <span className={styles.historyLabel}>Weight: </span>
+                {r.weight !== null ? `${r.weight} ${r.weight_unit}` : "\u2014"}
               </span>
-              <span><span className="history-label">RPE: </span>{r.rpe ?? "—"}</span>
-              <span style={{ color: "#666" }}><span className="history-label">Comment: </span>{r.comment ?? ""}</span>
+              <span><span className={styles.historyLabel}>RPE: </span>{r.rpe ?? "\u2014"}</span>
+              <span className={styles.commentCell}><span className={styles.historyLabel}>Comment: </span>{r.comment ?? ""}</span>
             </div>
           );
         })}
-      </div>
+      </Card>
 
       {hasMore && (
-        <button
-          className="touch-btn"
-          onClick={() => search(page + 1)}
-          disabled={loading}
-          style={{
-            padding: "8px 16px",
-            border: "1px solid #e5e7eb",
-            background: "white",
-            cursor: "pointer",
-            alignSelf: "center",
-          }}
-        >
-          {loading ? "Loading..." : "Load More"}
-        </button>
+        <div className={styles.loadMoreWrap}>
+          <Button onClick={() => search(page + 1)} disabled={loading}>
+            {loading ? "Loading..." : "Load More"}
+          </Button>
+        </div>
       )}
 
-      <p style={{ fontSize: "12px", color: "#999" }}>
+      <p className={styles.recordCount}>
         {results.length} record{results.length !== 1 ? "s" : ""} shown
       </p>
     </div>

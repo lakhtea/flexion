@@ -7,17 +7,21 @@ import type {
   WorkoutBlockWithExercises,
   WorkoutExercise,
   Exercise,
-  BLOCK_TYPES,
 } from "@/lib/tempapp/types";
-
-const BLOCK_TYPE_OPTIONS: Array<(typeof BLOCK_TYPES)[number]> = [
-  "warmup",
-  "strength",
-  "rehab",
-  "cardio",
-  "stretching",
-  "custom",
-];
+import { BLOCK_TYPES } from "@/lib/tempapp/types";
+import {
+  Button,
+  Card,
+  CardHeader,
+  Badge,
+  FormField,
+  Input,
+  Select,
+  FormRow,
+  EmptyState,
+  Alert,
+} from "../../components";
+import styles from "./planEditor.module.css";
 
 export default function PlanEditorPage({
   params,
@@ -166,196 +170,93 @@ export default function PlanEditorPage({
   const title = isUUID ? "Recurring Workout" : `Workout for ${date}`;
 
   if (loading) return <p>Loading plan...</p>;
-  if (error) return <p style={{ color: "#dc2626" }}>Error: {error}</p>;
+  if (error) return <Alert variant="error">Error: {error}</Alert>;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-      <div className="tempapp-plan-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+    <div className={styles.page}>
+      <div className={styles.headerWrap}>
         <div>
-          <Link
-            href="/tempapp/plan"
-            style={{ color: "#2563eb", textDecoration: "none", fontSize: "13px" }}
-          >
+          <Link href="/tempapp/plan" className={styles.backLink}>
             &larr; Back to Planner
           </Link>
-          <h1 className="tempapp-h1" style={{ fontSize: "24px", fontWeight: 700 }}>{title}</h1>
+          <h1 className={styles.title}>{title}</h1>
         </div>
-        <div className="tempapp-plan-header-actions" style={{ display: "flex", gap: "8px" }}>
-          <button
-            className="touch-btn"
-            onClick={loadRoutines}
-            style={{
-              padding: "8px 16px",
-              border: "1px solid #e5e7eb",
-              background: "white",
-              cursor: "pointer",
-              fontSize: "13px",
-            }}
-          >
+        <FormRow>
+          <Button size="sm" onClick={loadRoutines}>
             Add from Routine
-          </button>
-          <button
-            className="touch-btn"
-            onClick={() => setShowAddBlock(true)}
-            style={{
-              padding: "8px 16px",
-              border: "none",
-              background: "#2563eb",
-              color: "white",
-              cursor: "pointer",
-              fontSize: "13px",
-            }}
-          >
+          </Button>
+          <Button variant="primary" size="sm" onClick={() => setShowAddBlock(true)}>
             + Add Block
-          </button>
-        </div>
+          </Button>
+        </FormRow>
       </div>
 
       {/* Routine picker */}
       {showRoutinePicker && (
-        <div
-          style={{
-            border: "1px solid #e5e7eb",
-            background: "#f3f4f6",
-            padding: "16px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "8px",
-          }}
-        >
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontWeight: 600 }}>Select a Routine</span>
-            <button
-              onClick={() => setShowRoutinePicker(false)}
-              style={{
-                padding: "4px 8px",
-                border: "1px solid #e5e7eb",
-                background: "white",
-                cursor: "pointer",
-              }}
-            >
+        <Card>
+          <div className={styles.routinePickerHeader}>
+            <span className={styles.routinePickerTitle}>Select a Routine</span>
+            <Button size="sm" onClick={() => setShowRoutinePicker(false)}>
               Cancel
-            </button>
+            </Button>
           </div>
           {routines.length === 0 && (
-            <p style={{ color: "#666", fontSize: "14px" }}>No routines available.</p>
+            <p className={`${styles.noRoutines} ${styles.noRoutinesPadded}`}>No routines available.</p>
           )}
           {routines.map((r) => (
-            <div
-              key={r.id}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                padding: "8px 12px",
-                background: "white",
-                border: "1px solid #e5e7eb",
-              }}
-            >
+            <div key={r.id} className={styles.routineItem}>
               <div>
-                <span style={{ fontWeight: 500 }}>{r.name}</span>
+                <span className={styles.routineName}>{r.name}</span>
                 {r.description && (
-                  <span style={{ fontSize: "12px", color: "#666" }}>
-                    {" "}
-                    - {r.description}
+                  <span className={styles.routineDesc}>
+                    {" "}- {r.description}
                   </span>
                 )}
               </div>
-              <button
-                onClick={() => applyRoutine(r.id)}
-                style={{
-                  padding: "4px 12px",
-                  background: "#2563eb",
-                  color: "white",
-                  border: "none",
-                  cursor: "pointer",
-                  fontSize: "12px",
-                }}
-              >
+              <Button variant="primary" size="sm" onClick={() => applyRoutine(r.id)}>
                 Apply
-              </button>
+              </Button>
             </div>
           ))}
-        </div>
+        </Card>
       )}
 
       {/* Add block form */}
       {showAddBlock && (
-        <div
-          style={{
-            border: "1px solid #e5e7eb",
-            background: "#f3f4f6",
-            padding: "16px",
-            display: "flex",
-            gap: "8px",
-            alignItems: "flex-end",
-            flexWrap: "wrap",
-          }}
-        >
-          <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-            <label style={{ fontSize: "12px", fontWeight: 500 }}>Type</label>
-            <select
+        <div className={styles.addBlockForm}>
+          <FormField label="Type" compact>
+            <Select
+              compact
               value={newBlockType}
               onChange={(e) => setNewBlockType(e.target.value)}
-              style={{ padding: "8px", border: "1px solid #e5e7eb" }}
             >
-              {BLOCK_TYPE_OPTIONS.map((t) => (
+              {BLOCK_TYPES.map((t) => (
                 <option key={t} value={t}>
                   {t.charAt(0).toUpperCase() + t.slice(1)}
                 </option>
               ))}
-            </select>
+            </Select>
+          </FormField>
+          <div className={styles.addBlockFieldGrow}>
+            <FormField label="Name (optional)" compact>
+              <Input
+                compact
+                value={newBlockName}
+                onChange={(e) => setNewBlockName(e.target.value)}
+                placeholder={newBlockType.charAt(0).toUpperCase() + newBlockType.slice(1)}
+              />
+            </FormField>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "4px", flex: 1 }}>
-            <label style={{ fontSize: "12px", fontWeight: 500 }}>
-              Name (optional)
-            </label>
-            <input
-              value={newBlockName}
-              onChange={(e) => setNewBlockName(e.target.value)}
-              placeholder={newBlockType.charAt(0).toUpperCase() + newBlockType.slice(1)}
-              style={{ padding: "8px", border: "1px solid #e5e7eb", width: "100%" }}
-            />
-          </div>
-          <button
-            onClick={addBlock}
-            style={{
-              padding: "8px 16px",
-              background: "#2563eb",
-              color: "white",
-              border: "none",
-              cursor: "pointer",
-            }}
-          >
-            Add
-          </button>
-          <button
-            onClick={() => setShowAddBlock(false)}
-            style={{
-              padding: "8px 16px",
-              border: "1px solid #e5e7eb",
-              background: "white",
-              cursor: "pointer",
-            }}
-          >
-            Cancel
-          </button>
+          <Button variant="primary" onClick={addBlock}>Add</Button>
+          <Button onClick={() => setShowAddBlock(false)}>Cancel</Button>
         </div>
       )}
 
       {/* Blocks */}
       {plan && plan.blocks.length === 0 && (
-        <div
-          style={{
-            padding: "24px",
-            background: "#f3f4f6",
-            border: "1px solid #e5e7eb",
-            textAlign: "center",
-            color: "#666",
-          }}
-        >
+        <EmptyState>
           No blocks yet. Add a block to start building this workout.
-        </div>
+        </EmptyState>
       )}
 
       {plan &&
@@ -449,105 +350,52 @@ function BlockEditor({
   }
 
   return (
-    <div
-      style={{
-        border: "1px solid #e5e7eb",
-        background: "white",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
+    <Card>
       {/* Block header */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          padding: "12px 16px",
-          borderBottom: "1px solid #e5e7eb",
-          background: "#f3f4f6",
-          gap: "8px",
-        }}
-      >
-        <div style={{ display: "flex", gap: "4px" }}>
-          <button
-            onClick={onMoveUp}
-            disabled={isFirst}
-            style={{
-              padding: "2px 6px",
-              border: "1px solid #e5e7eb",
-              background: "white",
-              cursor: isFirst ? "default" : "pointer",
-              opacity: isFirst ? 0.3 : 1,
-              fontSize: "12px",
-            }}
-          >
-            ▲
-          </button>
-          <button
-            onClick={onMoveDown}
-            disabled={isLast}
-            style={{
-              padding: "2px 6px",
-              border: "1px solid #e5e7eb",
-              background: "white",
-              cursor: isLast ? "default" : "pointer",
-              opacity: isLast ? 0.3 : 1,
-              fontSize: "12px",
-            }}
-          >
-            ▼
-          </button>
-        </div>
-
-        {editingName ? (
-          <div style={{ display: "flex", gap: "4px", flex: 1 }}>
-            <input
-              value={blockName}
-              onChange={(e) => setBlockName(e.target.value)}
-              style={{ padding: "4px 8px", border: "1px solid #e5e7eb", flex: 1 }}
-              onKeyDown={(e) => e.key === "Enter" && saveName()}
-            />
+      <CardHeader subtle>
+        <div className={styles.blockHeaderRow}>
+          <div className={styles.moveButtons}>
             <button
-              onClick={saveName}
-              style={{
-                padding: "4px 8px",
-                background: "#2563eb",
-                color: "white",
-                border: "none",
-                cursor: "pointer",
-                fontSize: "12px",
-              }}
+              onClick={onMoveUp}
+              disabled={isFirst}
+              className={isFirst ? styles.moveBtnDisabled : styles.moveBtn}
             >
-              Save
+              &#9650;
+            </button>
+            <button
+              onClick={onMoveDown}
+              disabled={isLast}
+              className={isLast ? styles.moveBtnDisabled : styles.moveBtn}
+            >
+              &#9660;
             </button>
           </div>
-        ) : (
-          <span
-            style={{ fontWeight: 600, flex: 1, cursor: "pointer" }}
-            onClick={() => setEditingName(true)}
-          >
-            {block.name}
-            <span style={{ fontSize: "11px", color: "#666" }}>
-              {" "}
-              ({block.block_type})
-            </span>
-          </span>
-        )}
 
-        <button
-          onClick={onDelete}
-          style={{
-            padding: "4px 8px",
-            background: "#dc2626",
-            color: "white",
-            border: "none",
-            cursor: "pointer",
-            fontSize: "12px",
-          }}
-        >
-          Delete
-        </button>
-      </div>
+          {editingName ? (
+            <div className={styles.blockNameEditing}>
+              <input
+                value={blockName}
+                onChange={(e) => setBlockName(e.target.value)}
+                className={styles.blockNameInput}
+                onKeyDown={(e) => e.key === "Enter" && saveName()}
+              />
+              <Button variant="primary" size="sm" onClick={saveName}>Save</Button>
+            </div>
+          ) : (
+            <span
+              className={styles.blockNameDisplay}
+              onClick={() => setEditingName(true)}
+            >
+              {block.name}
+              <span className={styles.blockTypeLabel}>
+                {" "}({block.block_type})
+              </span>
+            </span>
+          )}
+
+          <Button variant="danger" size="sm" onClick={onDelete}>Delete</Button>
+        </div>
+      </CardHeader>
 
       {/* Exercises */}
       {block.exercises.map((ex, idx) => (
@@ -564,7 +412,7 @@ function BlockEditor({
       ))}
 
       {/* Add exercise */}
-      <div style={{ padding: "12px 16px" }}>
+      <div className={styles.addExerciseArea}>
         {showAddExercise ? (
           <ExerciseSearch
             blockId={block.id}
@@ -576,24 +424,16 @@ function BlockEditor({
             onCancel={() => setShowAddExercise(false)}
           />
         ) : (
-          <button
-            className="touch-btn"
+          <Button
+            fullWidth
             onClick={() => setShowAddExercise(true)}
-            style={{
-              padding: "8px 16px",
-              border: "1px dashed #e5e7eb",
-              background: "white",
-              cursor: "pointer",
-              color: "#2563eb",
-              width: "100%",
-              fontSize: "13px",
-            }}
+            className={styles.addExerciseBtn}
           >
             + Add Exercise
-          </button>
+          </Button>
         )}
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -666,79 +506,35 @@ function ExerciseSearch({
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-      <div style={{ display: "flex", gap: "8px" }}>
-        <input
-          className="tempapp-input"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search exercises..."
-          style={{ padding: "8px", border: "1px solid #e5e7eb", flex: 1 }}
-          autoFocus
-        />
-        <button
-          onClick={() => setShowCreate(!showCreate)}
-          style={{
-            padding: "8px 12px",
-            border: "1px solid #e5e7eb",
-            background: "white",
-            cursor: "pointer",
-            fontSize: "12px",
-          }}
-        >
-          New
-        </button>
-        <button
-          onClick={onCancel}
-          style={{
-            padding: "8px 12px",
-            border: "1px solid #e5e7eb",
-            background: "white",
-            cursor: "pointer",
-            fontSize: "12px",
-          }}
-        >
-          Cancel
-        </button>
+    <div className={styles.searchContainer}>
+      <div className={styles.searchRow}>
+        <div className={styles.searchInputWrap}>
+          <Input
+            compact
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search exercises..."
+            autoFocus
+          />
+        </div>
+        <Button size="sm" onClick={() => setShowCreate(!showCreate)}>New</Button>
+        <Button size="sm" onClick={onCancel}>Cancel</Button>
       </div>
 
       {results.length > 0 && (
-        <div
-          style={{
-            border: "1px solid #e5e7eb",
-            background: "white",
-            maxHeight: "200px",
-            overflowY: "auto",
-          }}
-        >
+        <div className={styles.searchResults}>
           {results.map((ex) => (
             <div
               key={ex.id}
               onClick={() => addExercise(ex.id)}
-              style={{
-                padding: "8px 12px",
-                borderBottom: "1px solid #e5e7eb",
-                cursor: "pointer",
-                display: "flex",
-                gap: "8px",
-                alignItems: "center",
-              }}
+              className={styles.searchResultItem}
             >
-              <span style={{ fontWeight: 500 }}>{ex.name}</span>
+              <span className={styles.searchResultName}>{ex.name}</span>
               {ex.equipment && (
-                <span
-                  style={{
-                    fontSize: "11px",
-                    background: "#e5e7eb",
-                    padding: "1px 6px",
-                    color: "#666",
-                  }}
-                >
-                  {ex.equipment}
-                </span>
+                <Badge variant="equipment">{ex.equipment}</Badge>
               )}
               {ex.context_label && (
-                <span style={{ fontSize: "11px", color: "#666" }}>
+                <span className={styles.searchResultContext}>
                   ({ex.context_label})
                 </span>
               )}
@@ -748,48 +544,32 @@ function ExerciseSearch({
       )}
 
       {showCreate && (
-        <div
-          style={{
-            border: "1px solid #e5e7eb",
-            background: "#f3f4f6",
-            padding: "12px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "8px",
-          }}
-        >
-          <input
+        <div className={styles.createForm}>
+          <Input
+            compact
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             placeholder="Exercise name"
-            style={{ padding: "8px", border: "1px solid #e5e7eb", width: "100%" }}
           />
-          <div style={{ display: "flex", gap: "8px" }}>
-            <input
+          <div className={styles.createRow}>
+            <Input
+              compact
+              className={styles.createInputFlex}
               value={newEquipment}
               onChange={(e) => setNewEquipment(e.target.value)}
               placeholder="Equipment (e.g. barbell)"
-              style={{ padding: "8px", border: "1px solid #e5e7eb", flex: 1 }}
             />
-            <input
+            <Input
+              compact
+              className={styles.createInputFlex}
               value={newContext}
               onChange={(e) => setNewContext(e.target.value)}
               placeholder="Context (e.g. tempo)"
-              style={{ padding: "8px", border: "1px solid #e5e7eb", flex: 1 }}
             />
           </div>
-          <button
-            onClick={createAndAdd}
-            style={{
-              padding: "8px 16px",
-              background: "#2563eb",
-              color: "white",
-              border: "none",
-              cursor: "pointer",
-            }}
-          >
+          <Button variant="primary" onClick={createAndAdd}>
             Create &amp; Add
-          </button>
+          </Button>
         </div>
       )}
     </div>
@@ -858,180 +638,75 @@ function ExerciseEditor({
   if (ex.rpe !== null) detailParts.push(`RPE ${ex.rpe}`);
   if (ex.rest_seconds !== null) detailParts.push(`Rest ${ex.rest_seconds}s`);
 
-  const fieldStyle: React.CSSProperties = {
-    padding: "8px",
-    border: "1px solid #e5e7eb",
-    width: "100%",
-  };
-
-  const smallFieldStyle: React.CSSProperties = {
-    ...fieldStyle,
-    width: "80px",
-  };
-
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        padding: "12px 16px",
-        borderBottom: "1px solid #e5e7eb",
-        gap: "8px",
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-        <div style={{ display: "flex", gap: "2px" }}>
+    <div className={styles.exerciseRow}>
+      <div className={styles.exerciseTop}>
+        <div className={styles.exerciseMoveButtons}>
           <button
             onClick={onMoveUp}
             disabled={isFirst}
-            style={{
-              padding: "1px 4px",
-              border: "1px solid #e5e7eb",
-              background: "white",
-              cursor: isFirst ? "default" : "pointer",
-              opacity: isFirst ? 0.3 : 1,
-              fontSize: "10px",
-            }}
+            className={isFirst ? styles.exerciseMoveBtnDisabled : styles.exerciseMoveBtn}
           >
-            ▲
+            &#9650;
           </button>
           <button
             onClick={onMoveDown}
             disabled={isLast}
-            style={{
-              padding: "1px 4px",
-              border: "1px solid #e5e7eb",
-              background: "white",
-              cursor: isLast ? "default" : "pointer",
-              opacity: isLast ? 0.3 : 1,
-              fontSize: "10px",
-            }}
+            className={isLast ? styles.exerciseMoveBtnDisabled : styles.exerciseMoveBtn}
           >
-            ▼
+            &#9660;
           </button>
         </div>
-        <span style={{ fontWeight: 600, flex: 1 }}>
+        <span className={styles.exerciseName}>
           {ex.exercise.name}
           {ex.exercise.equipment && (
-            <span
-              style={{
-                fontSize: "11px",
-                background: "#e5e7eb",
-                padding: "1px 6px",
-                color: "#666",
-              }}
-            >
-              {" "}
-              {ex.exercise.equipment}
-            </span>
+            <>
+              {" "}<Badge variant="equipment">{ex.exercise.equipment}</Badge>
+            </>
           )}
         </span>
         {!editing && (
-          <span style={{ fontSize: "13px", color: "#666" }}>
+          <span className={styles.exerciseDetail}>
             {detailParts.join(" ")}
           </span>
         )}
-        <button
-          onClick={() => setEditing(!editing)}
-          style={{
-            padding: "4px 8px",
-            border: "1px solid #e5e7eb",
-            background: "white",
-            cursor: "pointer",
-            fontSize: "11px",
-          }}
-        >
+        <Button size="sm" onClick={() => setEditing(!editing)}>
           {editing ? "Close" : "Edit"}
-        </button>
-        <button
-          onClick={onDelete}
-          style={{
-            padding: "4px 8px",
-            background: "#dc2626",
-            color: "white",
-            border: "none",
-            cursor: "pointer",
-            fontSize: "11px",
-          }}
-        >
-          X
-        </button>
+        </Button>
+        <Button variant="danger" size="sm" onClick={onDelete}>X</Button>
       </div>
 
       {editing && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-          <div className="tempapp-field-row">
-            <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-              <label style={{ fontSize: "11px", color: "#666" }}>Sets</label>
-              <input
-                value={sets}
-                onChange={(e) => setSets(e.target.value)}
-                type="number"
-                style={smallFieldStyle}
-              />
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-              <label style={{ fontSize: "11px", color: "#666" }}>Reps</label>
-              <input
-                value={reps}
-                onChange={(e) => setReps(e.target.value)}
-                placeholder="e.g. 8-12"
-                style={smallFieldStyle}
-              />
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-              <label style={{ fontSize: "11px", color: "#666" }}>Weight</label>
-              <input
-                value={weight}
-                onChange={(e) => setWeight(e.target.value)}
-                type="number"
-                style={smallFieldStyle}
-              />
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-              <label style={{ fontSize: "11px", color: "#666" }}>Unit</label>
-              <select
-                value={weightUnit}
-                onChange={(e) => setWeightUnit(e.target.value)}
-                style={{ padding: "8px", border: "1px solid #e5e7eb" }}
-              >
+        <div className={styles.editForm}>
+          <div className={styles.fieldRow}>
+            <FormField label="Sets" compact>
+              <Input compact value={sets} onChange={(e) => setSets(e.target.value)} type="number" />
+            </FormField>
+            <FormField label="Reps" compact>
+              <Input compact value={reps} onChange={(e) => setReps(e.target.value)} placeholder="e.g. 8-12" />
+            </FormField>
+            <FormField label="Weight" compact>
+              <Input compact value={weight} onChange={(e) => setWeight(e.target.value)} type="number" />
+            </FormField>
+            <FormField label="Unit" compact>
+              <Select compact value={weightUnit} onChange={(e) => setWeightUnit(e.target.value)}>
                 <option value="lbs">lbs</option>
                 <option value="kg">kg</option>
                 <option value="bw">bw</option>
-              </select>
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-              <label style={{ fontSize: "11px", color: "#666" }}>Time (s)</label>
-              <input
-                value={timeSeconds}
-                onChange={(e) => setTimeSeconds(e.target.value)}
-                type="number"
-                style={smallFieldStyle}
-              />
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-              <label style={{ fontSize: "11px", color: "#666" }}>RPE</label>
-              <input
-                value={rpe}
-                onChange={(e) => setRpe(e.target.value)}
-                type="number"
-                min="1"
-                max="10"
-                style={smallFieldStyle}
-              />
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-              <label style={{ fontSize: "11px", color: "#666" }}>Rest (s)</label>
-              <input
-                value={restSeconds}
-                onChange={(e) => setRestSeconds(e.target.value)}
-                type="number"
-                style={smallFieldStyle}
-              />
-            </div>
+              </Select>
+            </FormField>
+            <FormField label="Time (s)" compact>
+              <Input compact value={timeSeconds} onChange={(e) => setTimeSeconds(e.target.value)} type="number" />
+            </FormField>
+            <FormField label="RPE" compact>
+              <Input compact value={rpe} onChange={(e) => setRpe(e.target.value)} type="number" min="1" max="10" />
+            </FormField>
+            <FormField label="Rest (s)" compact>
+              <Input compact value={restSeconds} onChange={(e) => setRestSeconds(e.target.value)} type="number" />
+            </FormField>
           </div>
-          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-            <label style={{ fontSize: "12px" }}>
+          <div className={styles.supersetCheck}>
+            <label className={styles.supersetLabel}>
               <input
                 type="checkbox"
                 checked={isSupersetWithNext}
@@ -1040,42 +715,27 @@ function ExerciseEditor({
               Superset with next
             </label>
           </div>
-          <div style={{ display: "flex", gap: "8px" }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: "2px", flex: 1 }}>
-              <label style={{ fontSize: "11px", color: "#666" }}>Reminder</label>
-              <input
+          <div className={styles.reminderRow}>
+            <FormField label="Reminder" compact className={styles.reminderField}>
+              <Input
+                compact
                 value={reminder}
                 onChange={(e) => setReminder(e.target.value)}
                 placeholder="e.g. squeeze at top"
-                style={fieldStyle}
               />
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "2px", flex: 1 }}>
-              <label style={{ fontSize: "11px", color: "#666" }}>
-                Comment (max 50)
-              </label>
-              <input
+            </FormField>
+            <FormField label="Comment (max 50)" compact className={styles.reminderField}>
+              <Input
+                compact
                 value={comment}
                 onChange={(e) => setComment(e.target.value.slice(0, 50))}
                 maxLength={50}
-                style={fieldStyle}
               />
-            </div>
+            </FormField>
           </div>
-          <button
-            className="touch-btn"
-            onClick={save}
-            style={{
-              padding: "8px 16px",
-              background: "#2563eb",
-              color: "white",
-              border: "none",
-              cursor: "pointer",
-              alignSelf: "flex-start",
-            }}
-          >
+          <Button variant="primary" onClick={save} className={styles.saveBtnStart}>
             Save
-          </button>
+          </Button>
         </div>
       )}
     </div>
