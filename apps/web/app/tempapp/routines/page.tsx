@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { Routine, Exercise } from "@/lib/tempapp/types";
+import type { Routine, RoutineBlockWithExercises, RoutineWithBlocks, Exercise } from "@/lib/tempapp/types";
+import { BLOCK_TYPES } from "@/lib/tempapp/types";
 import {
   Button,
   Card,
@@ -14,42 +15,6 @@ import {
   PageHeader,
 } from "../components";
 import styles from "./page.module.css";
-
-interface RoutineBlockWithExercises {
-  id: string;
-  routine_id: string;
-  name: string;
-  block_type: string;
-  sort_order: number;
-  exercises: Array<{
-    id: string;
-    routine_block_id: string;
-    exercise_id: string;
-    exercise?: Exercise;
-    sets: number | null;
-    reps: string | null;
-    weight: number | null;
-    weight_unit: string;
-    time_seconds: number | null;
-    rpe: number | null;
-    rest_seconds: number | null;
-    is_superset_with_next: number;
-    sort_order: number;
-  }>;
-}
-
-interface RoutineWithBlocks extends Routine {
-  blocks: RoutineBlockWithExercises[];
-}
-
-const BLOCK_TYPE_OPTIONS = [
-  "warmup",
-  "strength",
-  "rehab",
-  "cardio",
-  "stretching",
-  "custom",
-];
 
 export default function RoutinesPage() {
   const [routines, setRoutines] = useState<RoutineWithBlocks[]>([]);
@@ -386,7 +351,7 @@ function RoutineDetail({
             value={newBlockType}
             onChange={(e) => setNewBlockType(e.target.value)}
           >
-            {BLOCK_TYPE_OPTIONS.map((t) => (
+            {BLOCK_TYPES.map((t) => (
               <option key={t} value={t}>
                 {t.charAt(0).toUpperCase() + t.slice(1)}
               </option>
