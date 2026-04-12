@@ -7,8 +7,8 @@ import type {
   WorkoutBlockWithExercises,
   WorkoutExercise,
   Exercise,
-  BLOCK_TYPES,
 } from "@/lib/tempapp/types";
+import { BLOCK_TYPES } from "@/lib/tempapp/types";
 import {
   Button,
   Card,
@@ -22,15 +22,6 @@ import {
   Alert,
 } from "../../components";
 import styles from "./planEditor.module.css";
-
-const BLOCK_TYPE_OPTIONS: Array<(typeof BLOCK_TYPES)[number]> = [
-  "warmup",
-  "strength",
-  "rehab",
-  "cardio",
-  "stretching",
-  "custom",
-];
 
 export default function PlanEditorPage({
   params,
@@ -239,7 +230,7 @@ export default function PlanEditorPage({
               value={newBlockType}
               onChange={(e) => setNewBlockType(e.target.value)}
             >
-              {BLOCK_TYPE_OPTIONS.map((t) => (
+              {BLOCK_TYPES.map((t) => (
                 <option key={t} value={t}>
                   {t.charAt(0).toUpperCase() + t.slice(1)}
                 </option>
