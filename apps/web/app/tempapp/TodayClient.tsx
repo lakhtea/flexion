@@ -94,7 +94,7 @@ export default function TodayClient({ initialPlan, date }: TodayClientProps) {
           </Link>
         </EmptyState>
       ) : (
-        <PlanEditorClient initialPlan={initialPlan} date={date} embedded />
+        <PlanEditorClient key={initialPlan.id} initialPlan={initialPlan} date={date} embedded />
       )}
     </div>
   );

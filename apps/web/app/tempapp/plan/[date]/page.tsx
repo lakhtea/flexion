@@ -22,5 +22,5 @@ export default async function PlanEditorPage({
   }
 
   // If no plan exists yet, pass null — the client will create one on first mutation
-  return <PlanEditorClient initialPlan={plan} date={date} />;
+  return <PlanEditorClient key={plan?.id ?? date} initialPlan={plan} date={date} />;
 }
