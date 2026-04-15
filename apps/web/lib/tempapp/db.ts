@@ -173,6 +173,53 @@ export async function initSchema(): Promise<void> {
       sort_order INTEGER NOT NULL DEFAULT 0
     );
 
+    -- Training blocks: multi-day cycle templates
+    CREATE TABLE IF NOT EXISTS training_blocks (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      description TEXT DEFAULT '',
+      cycle_days INTEGER NOT NULL DEFAULT 7,
+      is_recurring INTEGER DEFAULT 1,
+      start_date TEXT,
+      is_active INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS training_block_days (
+      id TEXT PRIMARY KEY,
+      training_block_id TEXT NOT NULL REFERENCES training_blocks(id) ON DELETE CASCADE,
+      day_offset INTEGER NOT NULL,
+      label TEXT NOT NULL,
+      is_rest_day INTEGER DEFAULT 0,
+      UNIQUE(training_block_id, day_offset)
+    );
+
+    CREATE TABLE IF NOT EXISTS training_block_day_blocks (
+      id TEXT PRIMARY KEY,
+      training_block_day_id TEXT NOT NULL REFERENCES training_block_days(id) ON DELETE CASCADE,
+      name TEXT NOT NULL,
+      block_type TEXT NOT NULL DEFAULT 'strength',
+      sort_order INTEGER NOT NULL DEFAULT 0
+    );
+
+    CREATE TABLE IF NOT EXISTS training_block_day_exercises (
+      id TEXT PRIMARY KEY,
+      training_block_day_block_id TEXT NOT NULL REFERENCES training_block_day_blocks(id) ON DELETE CASCADE,
+      exercise_id TEXT NOT NULL REFERENCES exercises(id),
+      sets INTEGER,
+      reps TEXT,
+      weight REAL,
+      weight_unit TEXT DEFAULT 'lbs',
+      time_seconds INTEGER,
+      rpe REAL,
+      rest_seconds INTEGER,
+      is_superset_with_next INTEGER DEFAULT 0,
+      sort_order INTEGER NOT NULL DEFAULT 0
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_training_blocks_active ON training_blocks(is_active);
+    CREATE INDEX IF NOT EXISTS idx_training_block_days_block ON training_block_days(training_block_id);
+
     CREATE INDEX IF NOT EXISTS idx_workout_plans_date ON workout_plans(specific_date);
     CREATE INDEX IF NOT EXISTS idx_workout_plans_dow ON workout_plans(day_of_week);
     CREATE INDEX IF NOT EXISTS idx_completed_workouts_date ON completed_workouts(date);

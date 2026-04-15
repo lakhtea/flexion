@@ -1,26 +1,14 @@
-import { dbAll, dbGet, dbRun, ensureSchema } from "@/lib/tempapp/db";
+import { dbGet, dbRun, ensureSchema } from "@/lib/tempapp/db";
+import { getExercises } from "@/lib/tempapp/queries";
 import crypto from "crypto";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   try {
-    await ensureSchema();
     const url = new URL(request.url);
-    const search = url.searchParams.get("search");
-
-    let exercises;
-    if (search) {
-      exercises = await dbAll(
-        "SELECT * FROM exercises WHERE name LIKE ? ORDER BY name ASC",
-        [`%${search}%`]
-      );
-    } else {
-      exercises = await dbAll(
-        "SELECT * FROM exercises ORDER BY name ASC"
-      );
-    }
-
+    const q = url.searchParams.get("q");
+    const exercises = await getExercises(q || undefined);
     return Response.json(exercises);
   } catch (e) {
     return Response.json(
