@@ -2,6 +2,8 @@ import { getTrainingBlock } from "@/lib/tempapp/queries";
 import { notFound } from "next/navigation";
 import DayEditorClient from "./DayEditorClient";
 
+export const dynamic = "force-dynamic";
+
 export default async function DayEditorPage({
   params,
 }: {
