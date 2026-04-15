@@ -1,6 +1,8 @@
 import { getExerciseHistory } from "@/lib/tempapp/queries";
 import ExerciseHistoryClient from "./ExerciseHistoryClient";
 
+export const dynamic = "force-dynamic";
+
 export default async function ExerciseHistoryPage({
   params,
 }: {

@@ -21,10 +21,11 @@
 .formRow {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .formRowInputFlex {
-  flex: 1;
+  flex: 1 1 150px;
 }
 
 .noExercises {

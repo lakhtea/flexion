@@ -2,6 +2,8 @@ import { getWorkoutForDate, getWorkoutPlan } from "@/lib/tempapp/queries";
 import type { WorkoutPlanWithBlocks } from "@/lib/tempapp/types";
 import PlanEditorClient from "./PlanEditorClient";
 
+export const dynamic = "force-dynamic";
+
 export default async function PlanEditorPage({
   params,
 }: {
