@@ -48,15 +48,15 @@ export async function POST(request: Request) {
     }
 
     const blockId = crypto.randomUUID();
-    await dbRun(
-      `INSERT INTO training_blocks (id, name, description, cycle_days, is_recurring)
-       VALUES (?, ?, ?, ?, ?)`,
-      [blockId, name, description ?? "", cycle_days, is_recurring ?? 1]
-    );
-
-    const dayStatements = [];
+    const allStatements = [
+      {
+        sql: `INSERT INTO training_blocks (id, name, description, cycle_days, is_recurring)
+              VALUES (?, ?, ?, ?, ?)`,
+        args: [blockId, name, description ?? "", cycle_days, is_recurring ?? 1],
+      },
+    ];
     for (let i = 0; i < cycle_days; i++) {
-      dayStatements.push({
+      allStatements.push({
         sql: `INSERT INTO training_block_days (id, training_block_id, day_offset, label, is_rest_day)
               VALUES (?, ?, ?, ?, 0)`,
         args: [
@@ -67,7 +67,7 @@ export async function POST(request: Request) {
         ],
       });
     }
-    await dbBatch(dayStatements);
+    await dbBatch(allStatements);
 
     const created = await import("@/lib/tempapp/queries").then((m) =>
       m.getTrainingBlock(blockId)

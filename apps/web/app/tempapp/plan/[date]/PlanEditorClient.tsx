@@ -30,9 +30,10 @@ import styles from "./planEditor.module.css";
 interface PlanEditorClientProps {
   initialPlan: WorkoutPlanWithBlocks | null;
   date: string;
+  embedded?: boolean;
 }
 
-export default function PlanEditorClient({ initialPlan, date }: PlanEditorClientProps) {
+export default function PlanEditorClient({ initialPlan, date, embedded }: PlanEditorClientProps) {
   const router = useRouter();
   const [plan, setPlan] = useState<WorkoutPlanWithBlocks | null>(initialPlan);
   const [error, setError] = useState<string | null>(null);
@@ -151,13 +152,25 @@ export default function PlanEditorClient({ initialPlan, date }: PlanEditorClient
     <div className={styles.page}>
       {error && <Alert variant="error">Error: {error}</Alert>}
 
-      <div className={styles.headerWrap}>
-        <div>
-          <Link href="/tempapp/plan" className={styles.backLink}>
-            &larr; Back to Planner
-          </Link>
-          <h1 className={styles.title}>{title}</h1>
+      {!embedded && (
+        <div className={styles.headerWrap}>
+          <div>
+            <Link href="/tempapp/plan" className={styles.backLink}>
+              &larr; Back to Planner
+            </Link>
+            <h1 className={styles.title}>{title}</h1>
+          </div>
+          <FormRow>
+            <Button size="sm" onClick={loadRoutines}>
+              Add from Routine
+            </Button>
+            <Button variant="primary" size="sm" onClick={() => setShowAddBlock(true)}>
+              + Add Block
+            </Button>
+          </FormRow>
         </div>
+      )}
+      {embedded && (
         <FormRow>
           <Button size="sm" onClick={loadRoutines}>
             Add from Routine
@@ -166,7 +179,7 @@ export default function PlanEditorClient({ initialPlan, date }: PlanEditorClient
             + Add Block
           </Button>
         </FormRow>
-      </div>
+      )}
 
       {/* Routine picker */}
       {showRoutinePicker && (

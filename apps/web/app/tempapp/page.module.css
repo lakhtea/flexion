@@ -67,6 +67,19 @@
   font-weight: 700;
 }
 
+.todayHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+@media (max-width: 599px) {
+  .todayHeader {
+    flex-direction: column;
+  }
+}
+
 .exerciseDetail {
   font-size: 14px;
   color: #555;
