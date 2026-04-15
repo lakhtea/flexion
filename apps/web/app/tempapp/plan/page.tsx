@@ -106,6 +106,16 @@ export default function PlanPage() {
     }
   }
 
+  async function deleteRecurring(id: string) {
+    if (!confirm("Delete this recurring workout?")) return;
+    try {
+      await fetch(`/api/tempapp/workout-plans/${id}`, { method: "DELETE" });
+      setPlans((prev) => prev.filter((p) => p.id !== id));
+    } catch {
+      // silent
+    }
+  }
+
   // Calendar grid cells
   const calendarCells: Array<{ day: number; dateStr: string } | null> = [];
   for (let i = 0; i < firstDay; i++) {
@@ -404,26 +414,46 @@ export default function PlanPage() {
             </p>
           )}
           {recurringPlans.map((p) => (
-            <Link
+            <div
               key={p.id}
-              href={`/tempapp/plan/${p.id}`}
               style={{
                 display: "flex",
                 justifyContent: "space-between",
+                alignItems: "center",
                 padding: "12px 16px",
                 borderBottom: "1px solid #e5e7eb",
-                textDecoration: "none",
-                color: "#333",
               }}
             >
-              <span>
-                Every {DAY_NAMES[p.day_of_week!]}{" "}
-                {p.is_biweekly ? "(biweekly)" : ""}
-              </span>
-              <span style={{ color: "#2563eb", fontSize: "13px" }}>
-                Edit &rarr;
-              </span>
-            </Link>
+              <Link
+                href={`/tempapp/plan/${p.id}`}
+                style={{
+                  textDecoration: "none",
+                  color: "#333",
+                  flex: 1,
+                }}
+              >
+                <span>
+                  Every {DAY_NAMES[p.day_of_week!]}{" "}
+                  {p.is_biweekly ? "(biweekly)" : ""}
+                </span>
+                <span style={{ color: "#2563eb", fontSize: "13px", marginLeft: "8px" }}>
+                  Edit &rarr;
+                </span>
+              </Link>
+              <button
+                onClick={() => deleteRecurring(p.id)}
+                style={{
+                  padding: "4px 12px",
+                  background: "#dc2626",
+                  color: "white",
+                  border: "none",
+                  cursor: "pointer",
+                  fontSize: "12px",
+                }}
+              >
+                Delete
+              </button>
+            </div>
           ))}
         </div>
       </div>

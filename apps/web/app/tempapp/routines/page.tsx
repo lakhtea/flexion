@@ -443,6 +443,7 @@ function RoutineDetail({
           className="tempapp-apply-form"
           style={{
             display: "flex",
+            flexWrap: "wrap",
             gap: "8px",
             alignItems: "center",
             padding: "12px",
@@ -490,6 +491,7 @@ function RoutineDetail({
         <div
           style={{
             display: "flex",
+            flexWrap: "wrap",
             gap: "8px",
             alignItems: "flex-end",
             padding: "12px",

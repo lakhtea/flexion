@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type {
   WorkoutPlanWithBlocks,
   WorkoutBlockWithExercises,
@@ -176,29 +176,7 @@ export default function TodayPage() {
       )}
 
       {!plan ? (
-        <div
-          style={{
-            padding: "24px",
-            background: "#f3f4f6",
-            border: "1px solid #e5e7eb",
-            display: "flex",
-            flexDirection: "column",
-            gap: "12px",
-            alignItems: "center",
-          }}
-        >
-          <p style={{ fontSize: "16px" }}>No workout planned for today.</p>
-          <Link
-            href="/tempapp/plan"
-            style={{
-              color: "#2563eb",
-              textDecoration: "none",
-              fontWeight: 600,
-            }}
-          >
-            Go to Planner &rarr;
-          </Link>
-        </div>
+        <TodayEmptyState dateStr={dateStr} onPlanCreated={(p) => setPlan(p)} />
       ) : (
         <>
           {plan.blocks.map((block) => (
@@ -388,6 +366,189 @@ function ExerciseRow({
       )}
       {lastText && (
         <div style={{ fontSize: "12px", color: "#999" }}>{lastText}</div>
+      )}
+    </div>
+  );
+}
+
+function TodayEmptyState({
+  dateStr,
+  onPlanCreated,
+}: {
+  dateStr: string;
+  onPlanCreated: (plan: WorkoutPlanWithBlocks) => void;
+}) {
+  const router = useRouter();
+  const [routines, setRoutines] = useState<Array<{ id: string; name: string; description: string }>>([]);
+  const [showRoutines, setShowRoutines] = useState(false);
+  const [creating, setCreating] = useState(false);
+
+  async function createAndEdit() {
+    setCreating(true);
+    try {
+      // Create a plan for today then navigate to the editor
+      const res = await fetch("/api/tempapp/workout-plans", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ specific_date: dateStr }),
+      });
+      if (!res.ok) throw new Error("Failed");
+      router.push(`/tempapp/plan/${dateStr}`);
+    } catch {
+      setCreating(false);
+    }
+  }
+
+  async function loadAndShowRoutines() {
+    try {
+      const res = await fetch("/api/tempapp/routines");
+      if (!res.ok) return;
+      const data = await res.json();
+      setRoutines(data);
+      setShowRoutines(true);
+    } catch {
+      // silent
+    }
+  }
+
+  async function applyRoutine(routineId: string) {
+    setCreating(true);
+    try {
+      // Create plan
+      const planRes = await fetch("/api/tempapp/workout-plans", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ specific_date: dateStr }),
+      });
+      if (!planRes.ok) throw new Error("Failed");
+      const plan = await planRes.json();
+
+      // Apply routine
+      const applyRes = await fetch(`/api/tempapp/routines/${routineId}/apply`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ workout_plan_id: plan.id }),
+      });
+      if (!applyRes.ok) throw new Error("Failed");
+
+      // Reload the hydrated plan
+      const fullRes = await fetch(`/api/tempapp/workout-plans/${plan.id}`);
+      if (!fullRes.ok) throw new Error("Failed");
+      const fullPlan = await fullRes.json();
+      onPlanCreated(fullPlan);
+    } catch {
+      setCreating(false);
+    }
+  }
+
+  return (
+    <div
+      style={{
+        padding: "24px",
+        background: "#f3f4f6",
+        border: "1px solid #e5e7eb",
+        display: "flex",
+        flexDirection: "column",
+        gap: "16px",
+        alignItems: "center",
+      }}
+    >
+      <p style={{ fontSize: "16px", color: "#666" }}>No workout planned for today.</p>
+      <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", justifyContent: "center" }}>
+        <button
+          className="touch-btn"
+          onClick={createAndEdit}
+          disabled={creating}
+          style={{
+            padding: "12px 20px",
+            background: "#2563eb",
+            color: "white",
+            border: "none",
+            cursor: "pointer",
+            fontWeight: 600,
+            fontSize: "14px",
+          }}
+        >
+          {creating ? "Creating..." : "Build Today\u2019s Workout"}
+        </button>
+        <button
+          className="touch-btn"
+          onClick={loadAndShowRoutines}
+          disabled={creating}
+          style={{
+            padding: "12px 20px",
+            border: "1px solid #e5e7eb",
+            background: "white",
+            cursor: "pointer",
+            fontSize: "14px",
+          }}
+        >
+          Use a Routine
+        </button>
+      </div>
+
+      {showRoutines && (
+        <div
+          style={{
+            width: "100%",
+            border: "1px solid #e5e7eb",
+            background: "white",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          {routines.length === 0 && (
+            <p style={{ padding: "12px", color: "#666", fontSize: "14px" }}>
+              No routines yet. Create one in the Routines tab.
+            </p>
+          )}
+          {routines.map((r) => (
+            <div
+              key={r.id}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                padding: "12px 16px",
+                borderBottom: "1px solid #e5e7eb",
+              }}
+            >
+              <div>
+                <span style={{ fontWeight: 500 }}>{r.name}</span>
+                {r.description && (
+                  <span style={{ fontSize: "12px", color: "#666" }}> - {r.description}</span>
+                )}
+              </div>
+              <button
+                onClick={() => applyRoutine(r.id)}
+                disabled={creating}
+                style={{
+                  padding: "6px 14px",
+                  background: "#16a34a",
+                  color: "white",
+                  border: "none",
+                  cursor: "pointer",
+                  fontSize: "13px",
+                }}
+              >
+                Apply
+              </button>
+            </div>
+          ))}
+          <button
+            onClick={() => setShowRoutines(false)}
+            style={{
+              padding: "8px",
+              border: "none",
+              background: "#f3f4f6",
+              cursor: "pointer",
+              fontSize: "13px",
+              color: "#666",
+            }}
+          >
+            Cancel
+          </button>
+        </div>
       )}
     </div>
   );

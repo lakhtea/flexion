@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { dbAll, dbGet, dbRun, ensureSchema } from "@/lib/tempapp/db";
 import type { RoutineBlock, RoutineExercise } from "@/lib/tempapp/types";
 
@@ -69,7 +70,7 @@ export async function PUT(
     await ensureSchema();
     const { id } = await params;
     const body = await request.json();
-    const { name, description } = body;
+    const { name, description, add_block, add_exercise } = body;
 
     const existing = await dbGet(
       "SELECT * FROM routines WHERE id = ?",
@@ -79,6 +80,31 @@ export async function PUT(
       return Response.json({ error: "Routine not found" }, { status: 404 });
     }
 
+    // Add a block to the routine
+    if (add_block) {
+      const blockId = crypto.randomUUID();
+      await dbRun(
+        `INSERT INTO routine_blocks (id, routine_id, name, block_type, sort_order)
+         VALUES (?, ?, ?, ?, ?)`,
+        [blockId, id, add_block.name, add_block.block_type ?? "strength", add_block.sort_order ?? 0]
+      );
+      const routine = await hydrateRoutine(id);
+      return Response.json(routine);
+    }
+
+    // Add an exercise to a block
+    if (add_exercise) {
+      const exId = crypto.randomUUID();
+      await dbRun(
+        `INSERT INTO routine_exercises (id, routine_block_id, exercise_id, sort_order)
+         VALUES (?, ?, ?, ?)`,
+        [exId, add_exercise.routine_block_id, add_exercise.exercise_id, add_exercise.sort_order ?? 0]
+      );
+      const routine = await hydrateRoutine(id);
+      return Response.json(routine);
+    }
+
+    // Default: update name/description
     await dbRun(
       `UPDATE routines SET
         name = COALESCE(?, name),
@@ -87,10 +113,7 @@ export async function PUT(
       [name ?? null, description ?? null, id]
     );
 
-    const updated = await dbGet(
-      "SELECT * FROM routines WHERE id = ?",
-      [id]
-    );
+    const updated = await hydrateRoutine(id);
     return Response.json(updated);
   } catch (e) {
     return Response.json(
