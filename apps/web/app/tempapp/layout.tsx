@@ -9,6 +9,7 @@ const NAV_LINKS = [
   { href: "/tempapp/plan", label: "Plan" },
   { href: "/tempapp/history", label: "History" },
   { href: "/tempapp/routines", label: "Routines" },
+  { href: "/tempapp/training-blocks", label: "Training Blocks" },
   { href: "/tempapp/tracker", label: "Tracker" },
   { href: "/tempapp/exercises", label: "Exercises" },
 ];

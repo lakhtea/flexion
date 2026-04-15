@@ -1,0 +1,136 @@
+/* training-blocks/page.module.css */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.newBlockForm {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.toggleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.toggleRow label {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+}
+
+.blockHeader {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  gap: 8px;
+  cursor: pointer;
+  min-height: 44px;
+}
+
+.blockHeaderExpanded {
+  composes: blockHeader;
+  border-bottom: 1px solid var(--border);
+}
+
+.blockName {
+  font-weight: 600;
+  flex: 1;
+  font-size: 16px;
+}
+
+.blockMeta {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.detailBody {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.activateForm {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.activateLabel {
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.daysList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dayItem {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  gap: 8px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  min-height: 44px;
+}
+
+.dayItem:hover {
+  background: var(--bg-secondary);
+}
+
+.dayLabel {
+  font-weight: 500;
+  flex: 1;
+  font-size: 14px;
+}
+
+.dayExCount {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.daysHeader {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+@media (max-width: 599px) {
+  .actionButtons {
+    flex-direction: column;
+  }
+
+  .actionButtons > * {
+    width: 100%;
+  }
+
+  .activateForm {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

@@ -118,6 +118,62 @@ export interface RoutineExercise {
   sort_order: number;
 }
 
+// ── Training blocks ──
+export interface TrainingBlock {
+  id: string;
+  name: string;
+  description: string;
+  cycle_days: number;
+  is_recurring: number;
+  start_date: string | null;
+  is_active: number;
+  created_at: string;
+}
+
+export interface TrainingBlockDay {
+  id: string;
+  training_block_id: string;
+  day_offset: number;
+  label: string;
+  is_rest_day: number;
+}
+
+export interface TrainingBlockDayBlock {
+  id: string;
+  training_block_day_id: string;
+  name: string;
+  block_type: string;
+  sort_order: number;
+}
+
+export interface TrainingBlockDayExercise {
+  id: string;
+  training_block_day_block_id: string;
+  exercise_id: string;
+  sets: number | null;
+  reps: string | null;
+  weight: number | null;
+  weight_unit: string;
+  time_seconds: number | null;
+  rpe: number | null;
+  rest_seconds: number | null;
+  is_superset_with_next: number;
+  sort_order: number;
+}
+
+// Hydrated training block types
+export interface TrainingBlockDayBlockWithExercises extends TrainingBlockDayBlock {
+  exercises: Array<TrainingBlockDayExercise & { exercise?: Exercise }>;
+}
+
+export interface TrainingBlockDayWithBlocks extends TrainingBlockDay {
+  blocks: TrainingBlockDayBlockWithExercises[];
+}
+
+export interface TrainingBlockWithDays extends TrainingBlock {
+  days: TrainingBlockDayWithBlocks[];
+}
+
 // ── API payloads ──
 export const BLOCK_TYPES = [
   "warmup",

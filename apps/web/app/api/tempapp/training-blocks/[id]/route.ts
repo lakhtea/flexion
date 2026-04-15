@@ -1,5 +1,5 @@
 import { dbGet, dbRun, ensureSchema } from "@/lib/tempapp/db";
-import { getWorkoutPlan } from "@/lib/tempapp/queries";
+import { getTrainingBlock } from "@/lib/tempapp/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -9,13 +9,13 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const plan = await getWorkoutPlan(id);
+    const block = await getTrainingBlock(id);
 
-    if (!plan) {
-      return Response.json({ error: "Plan not found" }, { status: 404 });
+    if (!block) {
+      return Response.json({ error: "Training block not found" }, { status: 404 });
     }
 
-    return Response.json(plan);
+    return Response.json(block);
   } catch (e) {
     return Response.json(
       { error: e instanceof Error ? e.message : "Unknown error" },
@@ -32,30 +32,35 @@ export async function PUT(
     await ensureSchema();
     const { id } = await params;
     const body = await request.json();
-    const { specific_date, day_of_week, is_biweekly, biweekly_start_date } = body;
+    const { name, description, is_recurring, start_date, is_active } = body;
 
-    const existing = await dbGet("SELECT * FROM workout_plans WHERE id = ?", [id]);
+    const existing = await dbGet(
+      "SELECT * FROM training_blocks WHERE id = ?",
+      [id]
+    );
     if (!existing) {
-      return Response.json({ error: "Plan not found" }, { status: 404 });
+      return Response.json({ error: "Training block not found" }, { status: 404 });
     }
 
     await dbRun(
-      `UPDATE workout_plans SET
-        specific_date = COALESCE(?, specific_date),
-        day_of_week = COALESCE(?, day_of_week),
-        is_biweekly = COALESCE(?, is_biweekly),
-        biweekly_start_date = COALESCE(?, biweekly_start_date)
+      `UPDATE training_blocks SET
+        name = COALESCE(?, name),
+        description = COALESCE(?, description),
+        is_recurring = COALESCE(?, is_recurring),
+        start_date = COALESCE(?, start_date),
+        is_active = COALESCE(?, is_active)
       WHERE id = ?`,
       [
-        specific_date ?? null,
-        day_of_week ?? null,
-        is_biweekly ?? null,
-        biweekly_start_date ?? null,
+        name ?? null,
+        description ?? null,
+        is_recurring ?? null,
+        start_date ?? null,
+        is_active ?? null,
         id,
       ]
     );
 
-    const updated = await dbGet("SELECT * FROM workout_plans WHERE id = ?", [id]);
+    const updated = await getTrainingBlock(id);
     return Response.json(updated);
   } catch (e) {
     return Response.json(
@@ -72,10 +77,10 @@ export async function DELETE(
   try {
     await ensureSchema();
     const { id } = await params;
-    const result = await dbRun("DELETE FROM workout_plans WHERE id = ?", [id]);
+    const result = await dbRun("DELETE FROM training_blocks WHERE id = ?", [id]);
 
     if (result.changes === 0) {
-      return Response.json({ error: "Plan not found" }, { status: 404 });
+      return Response.json({ error: "Training block not found" }, { status: 404 });
     }
 
     return Response.json({ success: true });

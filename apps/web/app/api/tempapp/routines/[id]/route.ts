@@ -1,53 +1,15 @@
-import crypto from "crypto";
-import { dbAll, dbGet, dbRun, ensureSchema } from "@/lib/tempapp/db";
-import type { RoutineBlock, RoutineExercise } from "@/lib/tempapp/types";
+import { dbGet, dbRun, ensureSchema } from "@/lib/tempapp/db";
+import { getRoutine } from "@/lib/tempapp/queries";
 
 export const dynamic = "force-dynamic";
-
-async function hydrateRoutine(routineId: string) {
-  const routine = await dbGet(
-    "SELECT * FROM routines WHERE id = ?",
-    [routineId]
-  );
-  if (!routine) return null;
-
-  const blocks = await dbAll<RoutineBlock>(
-    "SELECT * FROM routine_blocks WHERE routine_id = ? ORDER BY sort_order ASC",
-    [routineId]
-  );
-
-  const hydratedBlocks = await Promise.all(
-    blocks.map(async (block) => {
-      const exercises = await dbAll<RoutineExercise>(
-        "SELECT * FROM routine_exercises WHERE routine_block_id = ? ORDER BY sort_order ASC",
-        [block.id]
-      );
-
-      const hydratedExercises = await Promise.all(
-        exercises.map(async (re) => {
-          const exercise = await dbGet(
-            "SELECT * FROM exercises WHERE id = ?",
-            [re.exercise_id]
-          );
-          return { ...re, exercise: exercise ?? null };
-        })
-      );
-
-      return { ...block, exercises: hydratedExercises };
-    })
-  );
-
-  return { ...routine, blocks: hydratedBlocks };
-}
 
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await ensureSchema();
     const { id } = await params;
-    const routine = await hydrateRoutine(id);
+    const routine = await getRoutine(id);
 
     if (!routine) {
       return Response.json({ error: "Routine not found" }, { status: 404 });
@@ -88,7 +50,7 @@ export async function PUT(
          VALUES (?, ?, ?, ?, ?)`,
         [blockId, id, add_block.name, add_block.block_type ?? "strength", add_block.sort_order ?? 0]
       );
-      const routine = await hydrateRoutine(id);
+      const routine = await getRoutine(id);
       return Response.json(routine);
     }
 
@@ -100,7 +62,7 @@ export async function PUT(
          VALUES (?, ?, ?, ?)`,
         [exId, add_exercise.routine_block_id, add_exercise.exercise_id, add_exercise.sort_order ?? 0]
       );
-      const routine = await hydrateRoutine(id);
+      const routine = await getRoutine(id);
       return Response.json(routine);
     }
 
@@ -113,7 +75,7 @@ export async function PUT(
       [name ?? null, description ?? null, id]
     );
 
-    const updated = await hydrateRoutine(id);
+    const updated = await getRoutine(id);
     return Response.json(updated);
   } catch (e) {
     return Response.json(
