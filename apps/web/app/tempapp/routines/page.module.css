@@ -107,13 +107,94 @@
   padding: 8px 12px;
   border-bottom: 1px solid var(--border);
   display: flex;
-  gap: 8px;
-  align-items: center;
+  flex-direction: column;
+  gap: 6px;
   font-size: 13px;
+}
+
+.exerciseTop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.exerciseMoveButtons {
+  display: flex;
+  gap: 2px;
+}
+
+.exerciseMoveBtn {
+  padding: 1px 4px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  cursor: pointer;
+  font-size: 10px;
+}
+
+.exerciseMoveBtnDisabled {
+  composes: exerciseMoveBtn;
+  opacity: 0.3;
+  cursor: default;
 }
 
 .exerciseName {
   font-weight: 500;
+  flex: 1;
+}
+
+.exerciseDetail {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.editForm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fieldRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.fieldRow > div {
+  flex: 1 1 70px;
+  min-width: 60px;
+}
+
+.supersetCheck {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.supersetLabel {
+  font-size: 12px;
+}
+
+.saveBtnStart {
+  align-self: flex-start;
+}
+
+.moveButtons {
+  display: flex;
+  gap: 4px;
+}
+
+.moveBtn {
+  padding: 2px 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.moveBtnDisabled {
+  composes: moveBtn;
+  opacity: 0.3;
+  cursor: default;
 }
 
 .searchArea {
