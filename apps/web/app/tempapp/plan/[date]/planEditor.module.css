@@ -1,0 +1,318 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.headerWrap {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.backLink {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.routinePickerHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+}
+
+.noRoutinesPadded {
+  padding: 8px 16px;
+}
+
+.routinePickerTitle {
+  font-weight: 600;
+}
+
+.routineItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+
+.routineName {
+  font-weight: 500;
+}
+
+.routineDesc {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.noRoutines {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.addBlockForm {
+  border: 1px solid var(--border);
+  background: var(--bg-secondary);
+  padding: 16px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.addBlockField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.addBlockFieldGrow {
+  composes: addBlockField;
+  flex: 1;
+}
+
+.fieldLabel {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Block editor */
+.blockHeaderRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.moveButtons {
+  display: flex;
+  gap: 4px;
+}
+
+.moveBtn {
+  padding: 2px 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.moveBtnDisabled {
+  composes: moveBtn;
+  opacity: 0.3;
+  cursor: default;
+}
+
+.blockNameEditing {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+}
+
+.blockNameInput {
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  flex: 1;
+}
+
+.blockNameDisplay {
+  font-weight: 600;
+  flex: 1;
+  cursor: pointer;
+}
+
+.blockTypeLabel {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* Exercise editor */
+.exerciseRow {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  gap: 8px;
+}
+
+.exerciseTop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.exerciseMoveButtons {
+  display: flex;
+  gap: 2px;
+}
+
+.exerciseMoveBtn {
+  padding: 1px 4px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  cursor: pointer;
+  font-size: 10px;
+}
+
+.exerciseMoveBtnDisabled {
+  composes: exerciseMoveBtn;
+  opacity: 0.3;
+  cursor: default;
+}
+
+.exerciseName {
+  font-weight: 600;
+  flex: 1;
+}
+
+.exerciseDetail {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.editForm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fieldRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.fieldRow > div {
+  flex: 1 1 70px;
+  min-width: 60px;
+}
+
+.supersetCheck {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.supersetLabel {
+  font-size: 12px;
+}
+
+.reminderRow {
+  display: flex;
+  gap: 8px;
+}
+
+.reminderField {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.addExerciseArea {
+  padding: 12px 16px;
+}
+
+/* Exercise search */
+.searchRow {
+  display: flex;
+  gap: 8px;
+}
+
+.searchInputWrap {
+  flex: 1;
+}
+
+.searchResults {
+  border: 1px solid var(--border);
+  background: var(--bg);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.searchResultItem {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.searchResultName {
+  font-weight: 500;
+}
+
+.searchResultContext {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.createForm {
+  border: 1px solid var(--border);
+  background: var(--bg-secondary);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.createRow {
+  display: flex;
+  gap: 8px;
+}
+
+.searchContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.addExerciseBtn {
+  border-style: dashed;
+  color: var(--accent);
+}
+
+.saveBtnStart {
+  align-self: flex-start;
+}
+
+.createInputFlex {
+  flex: 1;
+}
+
+@media (max-width: 599px) {
+  .headerWrap {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .title {
+    font-size: 20px;
+  }
+
+  .fieldRow input,
+  .fieldRow select {
+    width: 100%;
+    min-height: 40px;
+    font-size: 16px;
+    box-sizing: border-box;
+  }
+}
+
+@media (min-width: 600px) {
+  .headerWrap {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}

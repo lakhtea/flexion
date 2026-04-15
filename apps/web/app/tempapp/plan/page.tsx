@@ -4,6 +4,16 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { WorkoutPlan } from "@/lib/tempapp/types";
+import {
+  Button,
+  Card,
+  CardHeader,
+  Input,
+  Select,
+  FormRow,
+  EmptyState,
+} from "../components";
+import styles from "./plan.module.css";
 
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -132,224 +142,91 @@ export default function PlanPage() {
   });
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-      <h1 className="tempapp-h1" style={{ fontSize: "24px", fontWeight: 700 }}>Workout Planner</h1>
+    <div className={styles.page}>
+      <h1 className={styles.pageTitle}>Workout Planner</h1>
 
       {/* Calendar */}
-      <div
-        style={{
-          border: "1px solid #e5e7eb",
-          background: "white",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "12px 16px",
-            borderBottom: "1px solid #e5e7eb",
-          }}
-        >
-          <button
-            className="touch-btn"
-            onClick={prevMonth}
-            style={{
-              padding: "8px 16px",
-              border: "1px solid #e5e7eb",
-              background: "white",
-              cursor: "pointer",
-            }}
-          >
-            &larr;
-          </button>
-          <span style={{ fontWeight: 600, fontSize: "16px" }}>{monthName}</span>
-          <button
-            className="touch-btn"
-            onClick={nextMonth}
-            style={{
-              padding: "8px 16px",
-              border: "1px solid #e5e7eb",
-              background: "white",
-              cursor: "pointer",
-            }}
-          >
-            &rarr;
-          </button>
+      <Card>
+        <div className={styles.calendarNav}>
+          <Button size="sm" onClick={prevMonth}>&larr;</Button>
+          <span className={styles.monthLabel}>{monthName}</span>
+          <Button size="sm" onClick={nextMonth}>&rarr;</Button>
         </div>
 
         {/* Day headers */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(7, 1fr)",
-            borderBottom: "1px solid #e5e7eb",
-          }}
-        >
+        <div className={styles.dayHeaders}>
           {DAY_NAMES.map((d) => (
-            <div
-              key={d}
-              style={{
-                padding: "8px",
-                textAlign: "center",
-                fontSize: "12px",
-                fontWeight: 600,
-                color: "#666",
-              }}
-            >
-              {d}
-            </div>
+            <div key={d} className={styles.dayHeader}>{d}</div>
           ))}
         </div>
 
         {/* Day cells */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(7, 1fr)",
-          }}
-        >
+        <div className={styles.dayGrid}>
           {calendarCells.map((cell, i) => {
             if (!cell) {
-              return <div key={`empty-${i}`} style={{ padding: "8px" }} />;
+              return <div key={`empty-${i}`} className={styles.dayCellEmpty} />;
             }
             const hasPlanned = plannedDates.has(cell.dateStr);
-            // Check if any recurring plan matches this day of week
             const dayOfWeek = new Date(cell.dateStr).getDay();
             const hasRecurring = recurringPlans.some(
               (p) => p.day_of_week === dayOfWeek
             );
             const isToday = cell.dateStr === formatDate(now);
 
+            const cellClass = isToday
+              ? styles.dayCellToday
+              : hasPlanned
+                ? styles.dayCellPlanned
+                : hasRecurring
+                  ? styles.dayCellRecurring
+                  : styles.dayCell;
+
             return (
               <div
                 key={cell.dateStr}
-                className="tempapp-calendar-cell"
+                className={cellClass}
                 onClick={() => router.push(`/tempapp/plan/${cell.dateStr}`)}
-                style={{
-                  padding: "8px",
-                  textAlign: "center",
-                  cursor: "pointer",
-                  background: isToday
-                    ? "#eff6ff"
-                    : hasPlanned
-                      ? "#f0fdf4"
-                      : hasRecurring
-                        ? "#fefce8"
-                        : "white",
-                  border: isToday ? "2px solid #2563eb" : "1px solid #f3f4f6",
-                  fontSize: "14px",
-                  fontWeight: isToday ? 700 : 400,
-                  position: "relative",
-                }}
               >
                 {cell.day}
-                {hasPlanned && (
-                  <div
-                    style={{
-                      width: "6px",
-                      height: "6px",
-                      background: "#16a34a",
-                      borderRadius: "50%",
-                      position: "absolute",
-                      bottom: "2px",
-                      left: "50%",
-                      transform: "translateX(-50%)",
-                    }}
-                  />
-                )}
-                {!hasPlanned && hasRecurring && (
-                  <div
-                    style={{
-                      width: "6px",
-                      height: "6px",
-                      background: "#eab308",
-                      borderRadius: "50%",
-                      position: "absolute",
-                      bottom: "2px",
-                      left: "50%",
-                      transform: "translateX(-50%)",
-                    }}
-                  />
-                )}
+                {hasPlanned && <div className={styles.dotPlanned} />}
+                {!hasPlanned && hasRecurring && <div className={styles.dotRecurring} />}
               </div>
             );
           })}
         </div>
-      </div>
+      </Card>
 
       {loading && <p>Loading plans...</p>}
 
       {/* Recurring workouts section */}
-      <div
-        style={{
-          border: "1px solid #e5e7eb",
-          background: "white",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        <div
-          style={{
-            padding: "12px 16px",
-            borderBottom: "1px solid #e5e7eb",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <span style={{ fontWeight: 600, fontSize: "16px" }}>
-            Recurring Workouts
-          </span>
-          <button
-            className="touch-btn"
-            onClick={() => setShowRecurringForm(!showRecurringForm)}
-            style={{
-              padding: "8px 16px",
-              border: "1px solid #e5e7eb",
-              background: "#2563eb",
-              color: "white",
-              cursor: "pointer",
-              fontSize: "13px",
-            }}
-          >
-            + New Recurring
-          </button>
-        </div>
+      <Card>
+        <CardHeader>
+          <div className={styles.recurringHeader}>
+            <span className={styles.sectionTitle}>
+              Recurring Workouts
+            </span>
+            <Button variant="primary" size="sm" onClick={() => setShowRecurringForm(!showRecurringForm)}>
+              + New Recurring
+            </Button>
+          </div>
+        </CardHeader>
 
         {showRecurringForm && (
-          <div
-            style={{
-              padding: "16px",
-              borderBottom: "1px solid #e5e7eb",
-              display: "flex",
-              flexDirection: "column",
-              gap: "12px",
-              background: "#f3f4f6",
-            }}
-          >
-            <div className="tempapp-recurring-form" style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-              <label style={{ fontSize: "14px", fontWeight: 500 }}>Day:</label>
-              <select
-                className="tempapp-select"
+          <div className={styles.recurringForm}>
+            <div className={styles.recurringRow}>
+              <label className={styles.recurringLabel}>Day:</label>
+              <Select
+                compact
                 value={recurringDay}
                 onChange={(e) => setRecurringDay(Number(e.target.value))}
-                style={{
-                  padding: "8px",
-                  border: "1px solid #e5e7eb",
-                }}
               >
                 {DAY_NAMES.map((name, i) => (
-                  <option key={i} value={i}>
-                    {name}
-                  </option>
+                  <option key={i} value={i}>{name}</option>
                 ))}
-              </select>
+              </Select>
             </div>
-            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-              <label style={{ fontSize: "14px" }}>
+            <FormRow center>
+              <label className={styles.biweeklyLabel}>
                 <input
                   type="checkbox"
                   checked={isBiweekly}
@@ -357,106 +234,57 @@ export default function PlanPage() {
                 />{" "}
                 Biweekly
               </label>
-            </div>
+            </FormRow>
             {isBiweekly && (
-              <div
-                style={{ display: "flex", gap: "8px", alignItems: "center" }}
-              >
-                <label style={{ fontSize: "14px", fontWeight: 500 }}>
-                  Starting:
-                </label>
-                <input
+              <FormRow center>
+                <label className={styles.recurringLabel}>Starting:</label>
+                <Input
+                  compact
                   type="date"
                   value={biweeklyStart}
                   onChange={(e) => setBiweeklyStart(e.target.value)}
-                  style={{
-                    padding: "8px",
-                    border: "1px solid #e5e7eb",
-                  }}
                 />
-              </div>
+              </FormRow>
             )}
-            <div style={{ display: "flex", gap: "8px" }}>
-              <button
-                className="touch-btn"
-                onClick={createRecurring}
-                disabled={saving}
-                style={{
-                  padding: "8px 16px",
-                  background: "#2563eb",
-                  color: "white",
-                  border: "none",
-                  cursor: "pointer",
-                }}
-              >
+            <FormRow>
+              <Button variant="primary" onClick={createRecurring} disabled={saving}>
                 {saving ? "Saving..." : "Create"}
-              </button>
-              <button
-                className="touch-btn"
-                onClick={() => setShowRecurringForm(false)}
-                style={{
-                  padding: "8px 16px",
-                  border: "1px solid #e5e7eb",
-                  background: "white",
-                  cursor: "pointer",
-                }}
-              >
+              </Button>
+              <Button onClick={() => setShowRecurringForm(false)}>
                 Cancel
-              </button>
-            </div>
+              </Button>
+            </FormRow>
           </div>
         )}
 
-        <div style={{ display: "flex", flexDirection: "column" }}>
+        <div>
           {recurringPlans.length === 0 && (
-            <p style={{ padding: "16px", color: "#666", fontSize: "14px" }}>
+            <p className={styles.emptyRecurring}>
               No recurring workouts set up yet.
             </p>
           )}
           {recurringPlans.map((p) => (
             <div
               key={p.id}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                padding: "12px 16px",
-                borderBottom: "1px solid #e5e7eb",
-              }}
+              className={styles.recurringPlanItem}
             >
               <Link
                 href={`/tempapp/plan/${p.id}`}
-                style={{
-                  textDecoration: "none",
-                  color: "#333",
-                  flex: 1,
-                }}
+                className={styles.recurringPlanLink}
               >
                 <span>
                   Every {DAY_NAMES[p.day_of_week!]}{" "}
                   {p.is_biweekly ? "(biweekly)" : ""}
                 </span>
-                <span style={{ color: "#2563eb", fontSize: "13px", marginLeft: "8px" }}>
-                  Edit &rarr;
-                </span>
+                <span className={styles.editArrow}>Edit &rarr;</span>
               </Link>
-              <button
-                onClick={() => deleteRecurring(p.id)}
-                style={{
-                  padding: "4px 12px",
-                  background: "#dc2626",
-                  color: "white",
-                  border: "none",
-                  cursor: "pointer",
-                  fontSize: "12px",
-                }}
-              >
+              <Button variant="danger" size="sm" onClick={() => deleteRecurring(p.id)}>
                 Delete
-              </button>
+              </Button>
             </div>
           ))}
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

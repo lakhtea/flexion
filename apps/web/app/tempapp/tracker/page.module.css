@@ -1,0 +1,73 @@
+/* tracker/page.module.css */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.progressItem {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.emptyText {
+  padding: 16px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.goalsHeaderRow {
+  justify-content: space-between;
+  width: 100%;
+  font-weight: 600;
+}
+
+.newGoalForm {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+}
+
+.goalRow {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border);
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.goalLabel {
+  flex: 1;
+  font-size: 14px;
+}
+
+.goalMeta {
+  color: var(--muted);
+}
+
+.editInput {
+  flex: 1;
+}
+
+.editInputSmall {
+  width: 80px;
+}
+
+@media (max-width: 599px) {
+  .goalRow {
+    flex-wrap: wrap;
+  }
+
+  .editInput,
+  .editInputSmall {
+    width: 100%;
+    flex: 1 1 100%;
+  }
+}

@@ -1,0 +1,8 @@
+.alert {
+  padding: 16px;
+  font-weight: 600;
+}
+
+.success { background: #f0fdf4; border: 1px solid var(--success); color: var(--success); }
+.error { background: #fef2f2; border: 1px solid var(--danger); color: var(--danger); }
+.info { background: #eff6ff; border: 1px solid var(--accent); color: var(--accent); }

@@ -2,6 +2,18 @@
 
 import { useState, useEffect } from "react";
 import type { TrackerGoal, TrackerProgress } from "@/lib/tempapp/types";
+import {
+  Button,
+  Card,
+  CardHeader,
+  FormField,
+  Input,
+  FormRow,
+  EmptyState,
+  ProgressBar,
+  PageHeader,
+} from "../components";
+import styles from "./page.module.css";
 
 function getWeekRange(): { start: string; end: string; display: string } {
   const now = new Date();
@@ -122,313 +134,153 @@ export default function TrackerPage() {
   if (loading) return <p>Loading tracker...</p>;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+    <div className={styles.page}>
       <div>
-        <h1 className="tempapp-h1" style={{ fontSize: "24px", fontWeight: 700 }}>Weekly Tracker</h1>
-        <p style={{ fontSize: "14px", color: "#666" }}>{week.display}</p>
+        <PageHeader title="Weekly Tracker" />
+        <p className={styles.subtitle}>{week.display}</p>
       </div>
 
       {/* Progress bars */}
-      <div
-        style={{
-          border: "1px solid #e5e7eb",
-          background: "white",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        <div
-          style={{
-            padding: "12px 16px",
-            borderBottom: "1px solid #e5e7eb",
-            fontWeight: 600,
-          }}
-        >
-          Progress
-        </div>
+      <Card>
+        <CardHeader>
+          <span>Progress</span>
+        </CardHeader>
         {progress.length === 0 && (
-          <p style={{ padding: "16px", color: "#666", fontSize: "14px" }}>
+          <p className={styles.emptyText}>
             No tracker goals set. Add goals below to track your weekly progress.
           </p>
         )}
-        {progress.map((p) => {
-          const pct = p.target_value > 0 ? Math.min(100, (p.current_value / p.target_value) * 100) : 0;
-          const isComplete = pct >= 100;
-          return (
-            <div
-              key={p.tracker_key}
-              style={{
-                padding: "12px 16px",
-                borderBottom: "1px solid #e5e7eb",
-                display: "flex",
-                flexDirection: "column",
-                gap: "6px",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  fontSize: "14px",
-                }}
-              >
-                <span style={{ fontWeight: 500 }}>{p.label}</span>
-                <span style={{ color: isComplete ? "#16a34a" : "#666" }}>
-                  {p.current_value} / {p.target_value} {p.unit}
-                </span>
-              </div>
-              <div
-                style={{
-                  height: "16px",
-                  background: "#e5e7eb",
-                  position: "relative",
-                  overflow: "hidden",
-                }}
-              >
-                <div
-                  style={{
-                    height: "100%",
-                    width: `${pct}%`,
-                    background: isComplete ? "#16a34a" : "#2563eb",
-                    position: "absolute",
-                    left: 0,
-                    top: 0,
-                  }}
-                />
-                <span
-                  style={{
-                    position: "absolute",
-                    right: "4px",
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    fontSize: "10px",
-                    fontWeight: 600,
-                    color: pct > 70 ? "white" : "#333",
-                  }}
-                >
-                  {Math.round(pct)}%
-                </span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+        {progress.map((p) => (
+          <div key={p.tracker_key} className={styles.progressItem}>
+            <ProgressBar
+              label={p.label}
+              current={p.current_value}
+              target={p.target_value}
+              unit={p.unit}
+            />
+          </div>
+        ))}
+      </Card>
 
       {/* Goals management */}
-      <div
-        style={{
-          border: "1px solid #e5e7eb",
-          background: "white",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        <div
-          style={{
-            padding: "12px 16px",
-            borderBottom: "1px solid #e5e7eb",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <span style={{ fontWeight: 600 }}>Goals</span>
-          <button
-            className="touch-btn"
-            onClick={() => setShowNew(!showNew)}
-            style={{
-              padding: "8px 16px",
-              background: "#2563eb",
-              color: "white",
-              border: "none",
-              cursor: "pointer",
-              fontSize: "13px",
-            }}
-          >
+      <Card>
+        <CardHeader className={styles.goalsHeaderRow}>
+          <span>Goals</span>
+          <Button variant="primary" size="sm" onClick={() => setShowNew(!showNew)}>
             + New Goal
-          </button>
-        </div>
+          </Button>
+        </CardHeader>
 
         {showNew && (
-          <div
-            className="tempapp-filter-bar"
-            style={{
-              padding: "12px 16px",
-              borderBottom: "1px solid #e5e7eb",
-              background: "#f3f4f6",
-              display: "flex",
-              gap: "8px",
-              flexWrap: "wrap",
-              alignItems: "flex-end",
-            }}
-          >
-            <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-              <label style={{ fontSize: "11px", color: "#666" }}>Tracker Key</label>
-              <input
-                value={newKey}
-                onChange={(e) => setNewKey(e.target.value)}
-                placeholder="e.g. mileage"
-                style={{ padding: "8px", border: "1px solid #e5e7eb", width: "140px" }}
-              />
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-              <label style={{ fontSize: "11px", color: "#666" }}>Label</label>
-              <input
-                value={newLabel}
-                onChange={(e) => setNewLabel(e.target.value)}
-                placeholder="e.g. Weekly Mileage"
-                style={{ padding: "8px", border: "1px solid #e5e7eb", width: "160px" }}
-              />
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-              <label style={{ fontSize: "11px", color: "#666" }}>Target</label>
-              <input
-                value={newTarget}
-                onChange={(e) => setNewTarget(e.target.value)}
-                type="number"
-                style={{ padding: "8px", border: "1px solid #e5e7eb", width: "80px" }}
-              />
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-              <label style={{ fontSize: "11px", color: "#666" }}>Unit</label>
-              <input
-                value={newUnit}
-                onChange={(e) => setNewUnit(e.target.value)}
-                placeholder="e.g. miles"
-                style={{ padding: "8px", border: "1px solid #e5e7eb", width: "100px" }}
-              />
-            </div>
-            <button
-              onClick={createGoal}
-              style={{
-                padding: "8px 16px",
-                background: "#2563eb",
-                color: "white",
-                border: "none",
-                cursor: "pointer",
-              }}
-            >
-              Create
-            </button>
-            <button
-              onClick={() => setShowNew(false)}
-              style={{
-                padding: "8px 16px",
-                border: "1px solid #e5e7eb",
-                background: "white",
-                cursor: "pointer",
-              }}
-            >
-              Cancel
-            </button>
+          <div className={styles.newGoalForm}>
+            <FormRow wrap mobileColumn>
+              <FormField label="Tracker Key" compact>
+                <Input
+                  compact
+                  value={newKey}
+                  onChange={(e) => setNewKey(e.target.value)}
+                  placeholder="e.g. mileage"
+                />
+              </FormField>
+              <FormField label="Label" compact>
+                <Input
+                  compact
+                  value={newLabel}
+                  onChange={(e) => setNewLabel(e.target.value)}
+                  placeholder="e.g. Weekly Mileage"
+                />
+              </FormField>
+              <FormField label="Target" compact>
+                <Input
+                  compact
+                  value={newTarget}
+                  onChange={(e) => setNewTarget(e.target.value)}
+                  type="number"
+                />
+              </FormField>
+              <FormField label="Unit" compact>
+                <Input
+                  compact
+                  value={newUnit}
+                  onChange={(e) => setNewUnit(e.target.value)}
+                  placeholder="e.g. miles"
+                />
+              </FormField>
+              <FormRow gap="sm">
+                <Button variant="primary" size="sm" onClick={createGoal}>
+                  Create
+                </Button>
+                <Button size="sm" onClick={() => setShowNew(false)}>
+                  Cancel
+                </Button>
+              </FormRow>
+            </FormRow>
           </div>
         )}
 
         {goals.length === 0 && (
-          <p style={{ padding: "16px", color: "#666", fontSize: "14px" }}>
+          <p className={styles.emptyText}>
             No goals configured yet.
           </p>
         )}
 
         {goals.map((g) => (
-          <div
-            key={g.id}
-            className="tempapp-goal-row"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              padding: "8px 16px",
-              borderBottom: "1px solid #e5e7eb",
-              gap: "8px",
-            }}
-          >
+          <div key={g.id} className={styles.goalRow}>
             {editingId === g.id ? (
               <>
-                <input
+                <Input
+                  compact
                   value={editLabel}
                   onChange={(e) => setEditLabel(e.target.value)}
-                  style={{ padding: "4px 8px", border: "1px solid #e5e7eb", flex: 1 }}
+                  className={styles.editInput}
                 />
-                <input
+                <Input
+                  compact
                   value={editTarget}
                   onChange={(e) => setEditTarget(e.target.value)}
                   type="number"
-                  style={{ padding: "4px 8px", border: "1px solid #e5e7eb", width: "80px" }}
+                  className={styles.editInputSmall}
                 />
-                <input
+                <Input
+                  compact
                   value={editUnit}
                   onChange={(e) => setEditUnit(e.target.value)}
-                  style={{ padding: "4px 8px", border: "1px solid #e5e7eb", width: "80px" }}
+                  className={styles.editInputSmall}
                 />
-                <button
-                  onClick={() => updateGoal(g.id)}
-                  style={{
-                    padding: "4px 8px",
-                    background: "#2563eb",
-                    color: "white",
-                    border: "none",
-                    cursor: "pointer",
-                    fontSize: "12px",
-                  }}
-                >
+                <Button variant="primary" size="sm" onClick={() => updateGoal(g.id)}>
                   Save
-                </button>
-                <button
-                  onClick={() => setEditingId(null)}
-                  style={{
-                    padding: "4px 8px",
-                    border: "1px solid #e5e7eb",
-                    background: "white",
-                    cursor: "pointer",
-                    fontSize: "12px",
-                  }}
-                >
+                </Button>
+                <Button size="sm" onClick={() => setEditingId(null)}>
                   Cancel
-                </button>
+                </Button>
               </>
             ) : (
               <>
-                <span style={{ flex: 1, fontSize: "14px" }}>
+                <span className={styles.goalLabel}>
                   <strong>{g.label}</strong>{" "}
-                  <span style={{ color: "#666" }}>
+                  <span className={styles.goalMeta}>
                     ({g.tracker_key}) — {g.target_value} {g.unit}/week
                   </span>
                 </span>
-                <button
+                <Button
+                  size="sm"
                   onClick={() => {
                     setEditingId(g.id);
                     setEditLabel(g.label);
                     setEditTarget(String(g.target_value));
                     setEditUnit(g.unit);
                   }}
-                  style={{
-                    padding: "4px 8px",
-                    border: "1px solid #e5e7eb",
-                    background: "white",
-                    cursor: "pointer",
-                    fontSize: "12px",
-                  }}
                 >
                   Edit
-                </button>
-                <button
-                  onClick={() => deleteGoal(g.id)}
-                  style={{
-                    padding: "4px 8px",
-                    background: "#dc2626",
-                    color: "white",
-                    border: "none",
-                    cursor: "pointer",
-                    fontSize: "12px",
-                  }}
-                >
+                </Button>
+                <Button variant="danger" size="sm" onClick={() => deleteGoal(g.id)}>
                   Delete
-                </button>
+                </Button>
               </>
             )}
           </div>
         ))}
-      </div>
+      </Card>
     </div>
   );
 }

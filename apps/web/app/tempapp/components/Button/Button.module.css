@@ -1,0 +1,30 @@
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  background: white;
+  color: var(--fg);
+  cursor: pointer;
+  font-weight: 500;
+  white-space: nowrap;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sm { padding: 4px 10px; font-size: 12px; }
+.md { padding: 8px 16px; font-size: 13px; }
+.lg { padding: 12px 24px; font-size: 16px; }
+
+.primary { background: var(--accent); color: white; border-color: var(--accent); }
+.danger { background: var(--danger); color: white; border-color: var(--danger); }
+.success { background: var(--success); color: white; border-color: var(--success); }
+.secondary { background: white; color: var(--fg); border-color: var(--border); }
+
+.fullWidth { width: 100%; }

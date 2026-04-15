@@ -1,0 +1,181 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.pageTitle {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.sectionTitle {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.calendarNav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.monthLabel {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.dayHeaders {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-bottom: 1px solid var(--border);
+}
+
+.dayHeader {
+  padding: 8px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.dayGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.dayCell {
+  padding: 6px 2px;
+  text-align: center;
+  cursor: pointer;
+  border: 1px solid #f3f4f6;
+  font-size: 13px;
+  font-weight: 400;
+  position: relative;
+  min-height: 36px;
+  background: var(--bg);
+}
+
+.dayCellToday {
+  composes: dayCell;
+  background: #eff6ff;
+  border: 2px solid var(--accent);
+  font-weight: 700;
+}
+
+.dayCellPlanned {
+  composes: dayCell;
+  background: #f0fdf4;
+}
+
+.dayCellRecurring {
+  composes: dayCell;
+  background: #fefce8;
+}
+
+.dayCellEmpty {
+  padding: 8px;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.dotPlanned {
+  composes: dot;
+  background: var(--success);
+}
+
+.dotRecurring {
+  composes: dot;
+  background: #eab308;
+}
+
+.recurringHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.recurringForm {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--bg-secondary);
+}
+
+.recurringRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.recurringLabel {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.biweeklyLabel {
+  font-size: 14px;
+}
+
+.emptyRecurring {
+  padding: 16px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.recurringPlanItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  gap: 8px;
+}
+
+.recurringPlanLink {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex: 1;
+  text-decoration: none;
+  color: var(--fg);
+}
+
+.editArrow {
+  color: var(--accent);
+  font-size: 13px;
+}
+
+@media (min-width: 600px) {
+  .dayCell,
+  .dayCellToday,
+  .dayCellPlanned,
+  .dayCellRecurring {
+    padding: 8px;
+    font-size: 14px;
+  }
+
+  .recurringRow {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+@media (max-width: 599px) {
+  .recurringRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

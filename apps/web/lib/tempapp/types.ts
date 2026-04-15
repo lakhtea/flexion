@@ -139,6 +139,14 @@ export interface WorkoutPlanWithBlocks extends WorkoutPlan {
   blocks: WorkoutBlockWithExercises[];
 }
 
+export interface RoutineBlockWithExercises extends RoutineBlock {
+  exercises: Array<RoutineExercise & { exercise?: Exercise }>;
+}
+
+export interface RoutineWithBlocks extends Routine {
+  blocks: RoutineBlockWithExercises[];
+}
+
 export interface TrackerProgress {
   tracker_key: string;
   label: string;

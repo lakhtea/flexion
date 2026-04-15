@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type {
   WorkoutPlanWithBlocks,
@@ -9,6 +10,15 @@ import type {
   Exercise,
   CompletedExercise,
 } from "@/lib/tempapp/types";
+import {
+  Button,
+  Card,
+  CardHeader,
+  Badge,
+  Alert,
+  EmptyState,
+} from "./components";
+import styles from "./page.module.css";
 
 function formatDate(d: Date): string {
   return d.toISOString().split("T")[0]!;
@@ -28,11 +38,14 @@ function formatWeight(w: number | null, unit: string): string {
   return `${w} ${unit}`;
 }
 
-function formatExerciseDetail(ex: WorkoutExercise & { exercise: Exercise }): string {
+function formatExerciseDetail(
+  ex: WorkoutExercise & { exercise: Exercise },
+): string {
   const parts: string[] = [];
   if (ex.sets !== null) parts.push(`${ex.sets} sets`);
   if (ex.reps !== null) parts.push(`${ex.reps} reps`);
-  if (ex.weight !== null) parts.push(`@ ${formatWeight(ex.weight, ex.weight_unit)}`);
+  if (ex.weight !== null)
+    parts.push(`@ ${formatWeight(ex.weight, ex.weight_unit)}`);
   if (ex.time_seconds !== null) parts.push(`${ex.time_seconds}s`);
   if (ex.rpe !== null) parts.push(`RPE ${ex.rpe}`);
   if (ex.rest_seconds !== null) parts.push(`Rest ${ex.rest_seconds}s`);
@@ -151,32 +164,27 @@ export default function TodayPage() {
   }
 
   if (error) {
-    return <p style={{ color: "#dc2626" }}>Error: {error}</p>;
+    return <Alert variant="error">Error: {error}</Alert>;
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+    <div className={styles.page}>
       <div>
-        <h1 className="tempapp-h1" style={{ fontSize: "24px", fontWeight: 700 }}>Today&apos;s Workout</h1>
-        <p style={{ fontSize: "16px", color: "#666" }}>{displayDate(today)}</p>
+        <h1 className={styles.pageTitle}>Today&apos;s Workout</h1>
+        <p className={styles.subtitle}>{displayDate(today)}</p>
       </div>
 
       {completed && (
-        <div
-          style={{
-            padding: "16px",
-            background: "#f0fdf4",
-            border: "1px solid #16a34a",
-            color: "#16a34a",
-            fontWeight: 600,
-          }}
-        >
-          Workout completed and recorded!
-        </div>
+        <Alert variant="success">Workout completed and recorded!</Alert>
       )}
 
       {!plan ? (
-        <TodayEmptyState dateStr={dateStr} onPlanCreated={(p) => setPlan(p)} />
+        <EmptyState>
+          <p>No workout planned for today.</p>
+          <Link href="/tempapp/plan" className={styles.goToPlannerLink}>
+            Go to Planner &rarr;
+          </Link>
+        </EmptyState>
       ) : (
         <>
           {plan.blocks.map((block) => (
@@ -189,24 +197,15 @@ export default function TodayPage() {
           ))}
 
           {!completed && (
-            <button
-              className="touch-btn"
+            <Button
+              variant="success"
+              size="lg"
+              fullWidth
               onClick={completeWorkout}
               disabled={completing}
-              style={{
-                padding: "12px 24px",
-                background: "#16a34a",
-                color: "white",
-                border: "none",
-                fontWeight: 600,
-                fontSize: "16px",
-                cursor: completing ? "not-allowed" : "pointer",
-                opacity: completing ? 0.6 : 1,
-                width: "100%",
-              }}
             >
               {completing ? "Saving..." : "Complete Workout"}
-            </button>
+            </Button>
           )}
         </>
       )}
@@ -237,59 +236,21 @@ function BlockCard({
   if (current.length > 0) clusters.push(current);
 
   return (
-    <div
-      style={{
-        border: "1px solid #e5e7eb",
-        background: "white",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      <div
-        style={{
-          padding: "12px 16px",
-          borderBottom: "1px solid #e5e7eb",
-          background: "#f3f4f6",
-        }}
-      >
-        <span style={{ fontWeight: 600, fontSize: "16px" }}>{block.name}</span>
-        <span
-          style={{
-            fontSize: "12px",
-            color: "#666",
-            padding: "2px 8px",
-            background: "#e5e7eb",
-            display: "inline-block",
-          }}
-        >
-          {block.block_type}
-        </span>
-      </div>
-      <div style={{ display: "flex", flexDirection: "column" }}>
+    <Card>
+      <CardHeader subtle>
+        <span className={styles.blockHeader}>{block.name}</span>
+        <Badge variant="blockType">{block.block_type}</Badge>
+      </CardHeader>
+      <div>
         {clusters.map((cluster, ci) => {
           const isSuperset = cluster.length > 1;
           return (
             <div
               key={ci}
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                borderBottom: "1px solid #e5e7eb",
-                background: isSuperset ? "#f9fafb" : "white",
-                borderLeft: isSuperset ? "3px solid #2563eb" : "none",
-              }}
+              className={isSuperset ? styles.clusterSuperset : styles.cluster}
             >
               {isSuperset && (
-                <div
-                  style={{
-                    padding: "4px 16px",
-                    fontSize: "11px",
-                    color: "#2563eb",
-                    fontWeight: 600,
-                  }}
-                >
-                  SUPERSET
-                </div>
+                <div className={styles.supersetLabel}>SUPERSET</div>
               )}
               {cluster.map((ex) => (
                 <ExerciseRow
@@ -303,7 +264,7 @@ function BlockCard({
           );
         })}
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -312,61 +273,36 @@ function ExerciseRow({
   isSkipped,
   onToggleSkip,
 }: {
-  ex: WorkoutExercise & { exercise: Exercise; last_performance: CompletedExercise | null };
+  ex: WorkoutExercise & {
+    exercise: Exercise;
+    last_performance: CompletedExercise | null;
+  };
   isSkipped: boolean;
   onToggleSkip: () => void;
 }) {
   const lastText = formatLastPerformance(ex.last_performance);
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        padding: "12px 16px",
-        gap: "4px",
-        opacity: isSkipped ? 0.5 : 1,
-        textDecoration: isSkipped ? "line-through" : "none",
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+    <div className={isSkipped ? styles.exerciseRowSkipped : styles.exerciseRow}>
+      <div className={styles.exerciseTop}>
         <input
           type="checkbox"
           checked={isSkipped}
           onChange={onToggleSkip}
           title="Skip this exercise"
-          style={{ cursor: "pointer", width: "20px", height: "20px" }}
+          className={styles.skipCheckbox}
         />
-        <span style={{ fontWeight: 600 }}>{ex.exercise.name}</span>
+        <span className={styles.exerciseName}>{ex.exercise.name}</span>
         {ex.exercise.equipment && (
-          <span
-            style={{
-              fontSize: "11px",
-              background: "#e5e7eb",
-              padding: "1px 6px",
-              color: "#666",
-            }}
-          >
-            {ex.exercise.equipment}
-          </span>
+          <Badge variant="equipment">{ex.exercise.equipment}</Badge>
         )}
       </div>
-      <div style={{ fontSize: "14px", color: "#555" }}>
-        {formatExerciseDetail(ex)}
-      </div>
+      <div className={styles.exerciseDetail}>{formatExerciseDetail(ex)}</div>
       {ex.reminder && (
-        <div style={{ fontSize: "12px", color: "#2563eb" }}>
-          Reminder: {ex.reminder}
-        </div>
+        <div className={styles.exerciseReminder}>Reminder: {ex.reminder}</div>
       )}
-      {ex.comment && (
-        <div style={{ fontSize: "12px", color: "#666" }}>
-          {ex.comment}
-        </div>
-      )}
-      {lastText && (
-        <div style={{ fontSize: "12px", color: "#999" }}>{lastText}</div>
-      )}
+      {ex.comment && <div className={styles.exerciseComment}>{ex.comment}</div>}
+      {lastText && <div className={styles.exerciseLast}>{lastText}</div>}
     </div>
   );
 }
@@ -379,7 +315,9 @@ function TodayEmptyState({
   onPlanCreated: (plan: WorkoutPlanWithBlocks) => void;
 }) {
   const router = useRouter();
-  const [routines, setRoutines] = useState<Array<{ id: string; name: string; description: string }>>([]);
+  const [routines, setRoutines] = useState<
+    Array<{ id: string; name: string; description: string }>
+  >([]);
   const [showRoutines, setShowRoutines] = useState(false);
   const [creating, setCreating] = useState(false);
 
@@ -453,8 +391,17 @@ function TodayEmptyState({
         alignItems: "center",
       }}
     >
-      <p style={{ fontSize: "16px", color: "#666" }}>No workout planned for today.</p>
-      <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", justifyContent: "center" }}>
+      <p style={{ fontSize: "16px", color: "#666" }}>
+        No workout planned for today.
+      </p>
+      <div
+        style={{
+          display: "flex",
+          gap: "8px",
+          flexWrap: "wrap",
+          justifyContent: "center",
+        }}
+      >
         <button
           className="touch-btn"
           onClick={createAndEdit}
@@ -516,7 +463,10 @@ function TodayEmptyState({
               <div>
                 <span style={{ fontWeight: 500 }}>{r.name}</span>
                 {r.description && (
-                  <span style={{ fontSize: "12px", color: "#666" }}> - {r.description}</span>
+                  <span style={{ fontSize: "12px", color: "#666" }}>
+                    {" "}
+                    - {r.description}
+                  </span>
                 )}
               </div>
               <button

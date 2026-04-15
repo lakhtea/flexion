@@ -1,0 +1,96 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--bg-secondary);
+  color: var(--fg);
+  font-size: 14px;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.brand {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--fg);
+  text-decoration: none;
+}
+
+.navLinks {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.navLink {
+  text-decoration: none;
+  font-size: 13px;
+  padding: 6px 8px;
+  border-bottom: 2px solid transparent;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  color: var(--fg);
+  font-weight: 400;
+}
+
+.navLinkActive {
+  color: var(--accent);
+  font-weight: 600;
+  border-bottom-color: var(--accent);
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 900px;
+  padding: 12px;
+  align-self: center;
+  box-sizing: border-box;
+}
+
+@media (min-width: 600px) {
+  .root {
+    font-size: 15px;
+  }
+
+  .nav {
+    padding: 12px 24px;
+    gap: 24px;
+    flex-wrap: nowrap;
+  }
+
+  .brand {
+    font-size: 18px;
+  }
+
+  .navLinks {
+    gap: 16px;
+    flex-wrap: nowrap;
+  }
+
+  .navLink {
+    padding: 4px 8px;
+    font-size: 14px;
+    min-height: auto;
+  }
+
+  .main {
+    padding: 24px;
+  }
+}
+
+@media (min-width: 900px) {
+  .root {
+    font-size: 16px;
+  }
+}
