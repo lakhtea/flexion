@@ -5,9 +5,8 @@ import { useRouter } from "next/navigation";
 import type { WorkoutPlanWithBlocks } from "@/lib/tempapp/types";
 import { displayDate } from "@/lib/tempapp/date-utils";
 import PlanEditorClient from "./plan/[date]/PlanEditorClient";
-import { Button, Alert, EmptyState } from "./components";
+import { Button, Alert } from "./components";
 import styles from "./page.module.css";
-import Link from "next/link";
 
 interface TodayClientProps {
   initialPlan: WorkoutPlanWithBlocks | null;
@@ -22,10 +21,21 @@ export default function TodayClient({ initialPlan, date }: TodayClientProps) {
   const [error, setError] = useState<string | null>(null);
 
   async function completeWorkout() {
-    if (!initialPlan) return;
+    // Re-fetch the latest plan data before completing
+    const res = await fetch(`/api/tempapp/workout-plans/for-date/${date}`);
+    if (!res.ok) {
+      setError("Failed to load plan for completion");
+      return;
+    }
+    const currentPlan: WorkoutPlanWithBlocks | null = await res.json();
+    if (!currentPlan || currentPlan.blocks.length === 0) {
+      setError("No exercises to complete");
+      return;
+    }
+
     setCompleting(true);
     try {
-      const exercises = initialPlan.blocks.flatMap((block) =>
+      const exercises = currentPlan.blocks.flatMap((block) =>
         block.exercises.map((ex) => ({
           exercise_id: ex.exercise_id,
           block_name: block.name,
@@ -44,17 +54,17 @@ export default function TodayClient({ initialPlan, date }: TodayClientProps) {
         }))
       );
 
-      const res = await fetch("/api/tempapp/completed-workouts", {
+      const completeRes = await fetch("/api/tempapp/completed-workouts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          workout_plan_id: initialPlan.id,
+          workout_plan_id: currentPlan.id,
           date,
           exercises,
         }),
       });
 
-      if (!res.ok) throw new Error("Failed to complete workout");
+      if (!completeRes.ok) throw new Error("Failed to complete workout");
       setCompleted(true);
       router.refresh();
     } catch (e) {
@@ -71,7 +81,7 @@ export default function TodayClient({ initialPlan, date }: TodayClientProps) {
           <h1 className={styles.pageTitle}>Today&apos;s Workout</h1>
           <p className={styles.subtitle}>{displayDate(today)}</p>
         </div>
-        {initialPlan && !completed && (
+        {!completed && (
           <Button
             variant="success"
             size="lg"
@@ -86,16 +96,12 @@ export default function TodayClient({ initialPlan, date }: TodayClientProps) {
       {error && <Alert variant="error">{error}</Alert>}
       {completed && <Alert variant="success">Workout completed and recorded!</Alert>}
 
-      {!initialPlan ? (
-        <EmptyState>
-          <p>No workout planned for today.</p>
-          <Link href={`/tempapp/plan/${date}`}>
-            <Button variant="primary">Plan Today&apos;s Workout</Button>
-          </Link>
-        </EmptyState>
-      ) : (
-        <PlanEditorClient key={initialPlan.id} initialPlan={initialPlan} date={date} embedded />
-      )}
+      <PlanEditorClient
+        key={initialPlan?.id ?? "new-" + date}
+        initialPlan={initialPlan}
+        date={date}
+        embedded
+      />
     </div>
   );
 }

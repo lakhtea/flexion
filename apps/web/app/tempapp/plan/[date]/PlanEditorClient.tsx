@@ -27,6 +27,22 @@ import {
 } from "../../components";
 import styles from "./planEditor.module.css";
 
+interface SelectedExerciseInfo {
+  exerciseId: string;
+  workoutExerciseId: string;
+  blockId: string;
+  blockName: string;
+  blockType: string;
+  sets: number | null;
+  reps: string | null;
+  weight: number | null;
+  weightUnit: string;
+  timeSeconds: number | null;
+  rpe: number | null;
+  restSeconds: number | null;
+  isSupersetWithNext: number;
+}
+
 interface PlanEditorClientProps {
   initialPlan: WorkoutPlanWithBlocks | null;
   date: string;
@@ -46,6 +62,15 @@ export default function PlanEditorClient({ initialPlan, date, embedded }: PlanEd
   // Routine picker
   const [showRoutinePicker, setShowRoutinePicker] = useState(false);
   const [routines, setRoutines] = useState<Array<{ id: string; name: string; description: string }>>([]);
+
+  // Quick Add Exercise
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
+
+  // Selection mode (Create Routine from exercises)
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedExercises, setSelectedExercises] = useState<Map<string, SelectedExerciseInfo>>(new Map());
+  const [showRoutineNameForm, setShowRoutineNameForm] = useState(false);
+  const [routineName, setRoutineName] = useState("");
 
   async function ensurePlan(): Promise<WorkoutPlanWithBlocks | null> {
     if (plan) return plan;
@@ -144,6 +169,131 @@ export default function PlanEditorClient({ initialPlan, date, embedded }: PlanEd
     }
   }
 
+  // Feature 1: Quick Add Exercise — find or create General block, then add exercise
+  async function handleQuickAddExercise(exerciseId: string) {
+    const currentPlan = await ensurePlan();
+    if (!currentPlan) return;
+
+    try {
+      // Find existing "General" block
+      let generalBlock = currentPlan.blocks.find(
+        (b) => b.name === "General" && b.block_type === "custom"
+      );
+
+      if (!generalBlock) {
+        // Create a General block
+        const res = await fetch(`/api/tempapp/workout-plans/${currentPlan.id}/blocks`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: "General",
+            block_type: "custom",
+            sort_order: currentPlan.blocks.length,
+          }),
+        });
+        if (!res.ok) throw new Error("Failed to create General block");
+        generalBlock = await res.json();
+      }
+
+      if (!generalBlock) return;
+
+      // Add exercise to the General block
+      const exerciseCount = "exercises" in generalBlock
+        ? (generalBlock as WorkoutBlockWithExercises).exercises.length
+        : 0;
+
+      const addRes = await fetch(`/api/tempapp/workout-blocks/${generalBlock.id}/exercises`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          exercise_id: exerciseId,
+          sort_order: exerciseCount,
+        }),
+      });
+      if (!addRes.ok) throw new Error("Failed to add exercise");
+
+      setShowQuickAdd(false);
+      router.refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "An error occurred");
+    }
+  }
+
+  // Feature 2: Toggle exercise selection
+  function toggleExerciseSelection(info: SelectedExerciseInfo) {
+    setSelectedExercises((prev) => {
+      const next = new Map(prev);
+      if (next.has(info.workoutExerciseId)) {
+        next.delete(info.workoutExerciseId);
+      } else {
+        next.set(info.workoutExerciseId, info);
+      }
+      return next;
+    });
+  }
+
+  function cancelSelectionMode() {
+    setSelectionMode(false);
+    setSelectedExercises(new Map());
+    setShowRoutineNameForm(false);
+    setRoutineName("");
+  }
+
+  async function createRoutineFromSelected() {
+    if (!routineName.trim()) return;
+
+    // Group selected exercises by block
+    const blockMap = new Map<string, {
+      name: string;
+      block_type: string;
+      exercises: SelectedExerciseInfo[];
+    }>();
+
+    for (const info of selectedExercises.values()) {
+      if (!blockMap.has(info.blockId)) {
+        blockMap.set(info.blockId, {
+          name: info.blockName,
+          block_type: info.blockType,
+          exercises: [],
+        });
+      }
+      blockMap.get(info.blockId)!.exercises.push(info);
+    }
+
+    const blocks = Array.from(blockMap.values()).map((b) => ({
+      name: b.name,
+      block_type: b.block_type,
+      exercises: b.exercises.map((ex) => ({
+        exercise_id: ex.exerciseId,
+        sets: ex.sets,
+        reps: ex.reps,
+        weight: ex.weight,
+        weight_unit: ex.weightUnit,
+        time_seconds: ex.timeSeconds,
+        rpe: ex.rpe,
+        rest_seconds: ex.restSeconds,
+        is_superset_with_next: ex.isSupersetWithNext,
+      })),
+    }));
+
+    try {
+      const res = await fetch("/api/tempapp/routines", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: routineName.trim(),
+          description: "",
+          blocks,
+        }),
+      });
+      if (!res.ok) throw new Error("Failed to create routine");
+      cancelSelectionMode();
+      router.refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "An error occurred");
+    }
+  }
+
   // Determine display title
   const isUUID = date.includes("-") && date.length > 10;
   const title = isUUID ? "Recurring Workout" : `Workout for ${date}`;
@@ -164,8 +314,17 @@ export default function PlanEditorClient({ initialPlan, date, embedded }: PlanEd
             <Button size="sm" onClick={loadRoutines}>
               Add from Routine
             </Button>
+            <Button variant="primary" size="sm" onClick={() => setShowQuickAdd(true)}>
+              + Quick Add Exercise
+            </Button>
             <Button variant="primary" size="sm" onClick={() => setShowAddBlock(true)}>
               + Add Block
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => selectionMode ? cancelSelectionMode() : setSelectionMode(true)}
+            >
+              {selectionMode ? "Exit Selection" : "Select Exercises"}
             </Button>
           </FormRow>
         </div>
@@ -175,10 +334,35 @@ export default function PlanEditorClient({ initialPlan, date, embedded }: PlanEd
           <Button size="sm" onClick={loadRoutines}>
             Add from Routine
           </Button>
+          <Button variant="primary" size="sm" onClick={() => setShowQuickAdd(true)}>
+            + Quick Add Exercise
+          </Button>
           <Button variant="primary" size="sm" onClick={() => setShowAddBlock(true)}>
             + Add Block
           </Button>
+          <Button
+            size="sm"
+            onClick={() => selectionMode ? cancelSelectionMode() : setSelectionMode(true)}
+          >
+            {selectionMode ? "Exit Selection" : "Select Exercises"}
+          </Button>
         </FormRow>
+      )}
+
+      {/* Quick Add Exercise search */}
+      {showQuickAdd && (
+        <Card>
+          <div className={styles.quickAddContainer}>
+            <ExerciseSearchPanel
+              blockId=""
+              sortOrder={0}
+              onDone={() => setShowQuickAdd(false)}
+              onCancel={() => setShowQuickAdd(false)}
+              onSelectExercise={handleQuickAddExercise}
+              isQuickAdd
+            />
+          </div>
+        </Card>
       )}
 
       {/* Routine picker */}
@@ -261,8 +445,59 @@ export default function PlanEditorClient({ initialPlan, date, embedded }: PlanEd
             onMoveDown={() => moveBlock(block.id, "down")}
             onDelete={() => deleteBlock(block.id)}
             onRefresh={() => router.refresh()}
+            selectionMode={selectionMode}
+            selectedExercises={selectedExercises}
+            onToggleExercise={toggleExerciseSelection}
           />
         ))}
+
+      {/* Selection mode floating bar */}
+      {selectionMode && (
+        <div className={styles.selectionBar}>
+          <span className={styles.selectionCount}>
+            {selectedExercises.size} exercise{selectedExercises.size !== 1 ? "s" : ""} selected
+          </span>
+          {showRoutineNameForm ? (
+            <div className={styles.routineNameForm}>
+              <Input
+                compact
+                value={routineName}
+                onChange={(e) => setRoutineName(e.target.value)}
+                placeholder="Routine name"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") createRoutineFromSelected();
+                }}
+              />
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={createRoutineFromSelected}
+                disabled={!routineName.trim() || selectedExercises.size === 0}
+              >
+                Save
+              </Button>
+              <Button size="sm" onClick={() => setShowRoutineNameForm(false)}>
+                Back
+              </Button>
+            </div>
+          ) : (
+            <div className={styles.selectionActions}>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setShowRoutineNameForm(true)}
+                disabled={selectedExercises.size === 0}
+              >
+                Create Routine
+              </Button>
+              <Button size="sm" onClick={cancelSelectionMode}>
+                Cancel
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -276,6 +511,9 @@ function BlockEditor({
   onMoveDown,
   onDelete,
   onRefresh,
+  selectionMode,
+  selectedExercises,
+  onToggleExercise,
 }: {
   block: WorkoutBlockWithExercises;
   planId: string;
@@ -285,6 +523,9 @@ function BlockEditor({
   onMoveDown: () => void;
   onDelete: () => void;
   onRefresh: () => void;
+  selectionMode: boolean;
+  selectedExercises: Map<string, SelectedExerciseInfo>;
+  onToggleExercise: (info: SelectedExerciseInfo) => void;
 }) {
   const [editingName, setEditingName] = useState(false);
   const [blockName, setBlockName] = useState(block.name);
@@ -388,6 +629,25 @@ function BlockEditor({
           onMoveDown={() => moveExercise(ex.id, "down")}
           onDelete={() => deleteExercise(ex.id)}
           onRefresh={onRefresh}
+          selectionMode={selectionMode}
+          isSelected={selectedExercises.has(ex.id)}
+          onToggleSelect={() =>
+            onToggleExercise({
+              exerciseId: ex.exercise_id,
+              workoutExerciseId: ex.id,
+              blockId: block.id,
+              blockName: block.name,
+              blockType: block.block_type,
+              sets: ex.sets,
+              reps: ex.reps,
+              weight: ex.weight,
+              weightUnit: ex.weight_unit,
+              timeSeconds: ex.time_seconds,
+              rpe: ex.rpe,
+              restSeconds: ex.rest_seconds,
+              isSupersetWithNext: ex.is_superset_with_next,
+            })
+          }
         />
       ))}
 
@@ -422,14 +682,18 @@ function ExerciseSearchPanel({
   sortOrder,
   onDone,
   onCancel,
+  onSelectExercise,
+  isQuickAdd,
 }: {
   blockId: string;
   sortOrder: number;
   onDone: () => void;
   onCancel: () => void;
+  onSelectExercise?: (exerciseId: string) => void;
+  isQuickAdd?: boolean;
 }) {
   const [query, setQuery] = useState("");
-  const { results, clearResults } = useExerciseSearch(query);
+  const { results, searching, clearResults } = useExerciseSearch(query);
   const [showCreate, setShowCreate] = useState(false);
   const [newName, setNewName] = useState("");
   const [newEquipment, setNewEquipment] = useState("");
@@ -437,6 +701,10 @@ function ExerciseSearchPanel({
   const [error, setError] = useState<string | null>(null);
 
   async function addExercise(exerciseId: string) {
+    if (isQuickAdd && onSelectExercise) {
+      onSelectExercise(exerciseId);
+      return;
+    }
     try {
       await fetch(`/api/tempapp/workout-blocks/${blockId}/exercises`, {
         method: "POST",
@@ -472,6 +740,9 @@ function ExerciseSearchPanel({
       setError(e instanceof Error ? e.message : "An error occurred");
     }
   }
+
+  const hasQuery = query.trim().length > 0;
+  const noResults = hasQuery && !searching && results.length === 0;
 
   return (
     <div className={styles.searchContainer}>
@@ -509,6 +780,22 @@ function ExerciseSearchPanel({
               )}
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Feature 3: Show "Create new exercise" option when no results match */}
+      {noResults && !showCreate && (
+        <div className={styles.noResultsCreate}>
+          <span className={styles.noResultsText}>No exercises found.</span>
+          <Button
+            size="sm"
+            onClick={() => {
+              setShowCreate(true);
+              setNewName(query.trim());
+            }}
+          >
+            Create new exercise
+          </Button>
         </div>
       )}
 
@@ -553,6 +840,9 @@ function ExerciseEditor({
   onMoveDown,
   onDelete,
   onRefresh,
+  selectionMode,
+  isSelected,
+  onToggleSelect,
 }: {
   ex: WorkoutExercise & { exercise: Exercise };
   isFirst: boolean;
@@ -561,6 +851,9 @@ function ExerciseEditor({
   onMoveDown: () => void;
   onDelete: () => void;
   onRefresh: () => void;
+  selectionMode: boolean;
+  isSelected: boolean;
+  onToggleSelect: () => void;
 }) {
   const [editing, setEditing] = useState(false);
   const [sets, setSets] = useState(ex.sets?.toString() ?? "");
@@ -609,9 +902,17 @@ function ExerciseEditor({
   if (ex.rest_seconds !== null) detailParts.push(`Rest ${ex.rest_seconds}s`);
 
   return (
-    <div className={styles.exerciseRow}>
+    <div className={`${styles.exerciseRow} ${isSelected ? styles.exerciseRowSelected : ""}`}>
       {error && <Alert variant="error">{error}</Alert>}
       <div className={styles.exerciseTop}>
+        {selectionMode && (
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={onToggleSelect}
+            className={styles.exerciseCheckbox}
+          />
+        )}
         <div className={styles.exerciseMoveButtons}>
           <button
             onClick={onMoveUp}

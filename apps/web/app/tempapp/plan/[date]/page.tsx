@@ -12,12 +12,12 @@ export default async function PlanEditorPage({
   const { date } = await params;
 
   let plan: WorkoutPlanWithBlocks | null = null;
+  const isDateString = /^\d{4}-\d{2}-\d{2}$/.test(date);
 
-  // Try loading as a specific date plan first
-  plan = await getWorkoutForDate(date);
-
-  if (!plan) {
-    // Try loading by ID (for recurring plans)
+  if (isDateString) {
+    plan = await getWorkoutForDate(date);
+  } else {
+    // It's a plan ID (UUID) — for editing recurring plans
     plan = await getWorkoutPlan(date);
   }
 
