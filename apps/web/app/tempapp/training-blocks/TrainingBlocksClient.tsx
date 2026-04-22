@@ -99,13 +99,25 @@ export default function TrainingBlocksClient({ initialBlocks }: TrainingBlocksCl
     }
   }
 
-  async function activateBlock(id: string) {
-    if (!activateDate) return;
+  function getLastSunday(): string {
+    const now = new Date();
+    const day = now.getDay(); // 0=Sun
+    const diff = day; // days since Sunday
+    const sunday = new Date(now);
+    sunday.setDate(now.getDate() - diff);
+    return sunday.toISOString().split("T")[0]!;
+  }
+
+  function getToday(): string {
+    return new Date().toISOString().split("T")[0]!;
+  }
+
+  async function activateBlock(id: string, startDate: string) {
     try {
       const res = await fetch(`/api/tempapp/training-blocks/${id}/activate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ start_date: activateDate }),
+        body: JSON.stringify({ start_date: startDate }),
       });
       if (!res.ok) throw new Error("Failed to activate training block");
       setActivatingId(null);
@@ -272,21 +284,39 @@ export default function TrainingBlocksClient({ initialBlocks }: TrainingBlocksCl
               {/* Activate form */}
               {activatingId === block.id && (
                 <div className={styles.activateForm}>
-                  <span className={styles.activateLabel}>Start date:</span>
-                  <Input
-                    compact
-                    type="date"
-                    value={activateDate}
-                    onChange={(e) => setActivateDate(e.target.value)}
-                  />
+                  <p className={styles.activateLabel}>
+                    How do you want to start this block?
+                  </p>
                   <Button
                     variant="success"
-                    size="sm"
-                    onClick={() => activateBlock(block.id)}
-                    disabled={!activateDate}
+                    onClick={() => activateBlock(block.id, getLastSunday())}
                   >
-                    Activate
+                    Align to this week (start from Sunday)
                   </Button>
+                  <Button
+                    variant="primary"
+                    onClick={() => activateBlock(block.id, getToday())}
+                  >
+                    Start from today (Day 1 = today)
+                  </Button>
+                  <div className={styles.activateOrDivider}>
+                    <span>or pick a custom date:</span>
+                  </div>
+                  <div className={styles.activateCustomRow}>
+                    <Input
+                      compact
+                      type="date"
+                      value={activateDate}
+                      onChange={(e) => setActivateDate(e.target.value)}
+                    />
+                    <Button
+                      size="sm"
+                      onClick={() => activateBlock(block.id, activateDate)}
+                      disabled={!activateDate}
+                    >
+                      Use this date
+                    </Button>
+                  </div>
                   <Button size="sm" onClick={() => setActivatingId(null)}>
                     Cancel
                   </Button>

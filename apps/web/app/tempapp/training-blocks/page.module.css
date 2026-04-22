@@ -68,17 +68,28 @@
 
 .activateForm {
   display: flex;
-  gap: 8px;
-  align-items: center;
-  padding: 12px;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
   background: var(--bg-secondary);
   border: 1px solid var(--border);
-  flex-wrap: wrap;
 }
 
 .activateLabel {
-  font-size: 13px;
-  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.activateOrDivider {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 4px 0;
+}
+
+.activateCustomRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 
 .daysList {

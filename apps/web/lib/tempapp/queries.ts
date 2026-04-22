@@ -1,4 +1,4 @@
-import { dbAll, dbGet, ensureSchema } from "./db";
+import { dbAll, dbGet, dbRun, ensureSchema } from "./db";
 import type {
   Exercise,
   WorkoutPlan,
@@ -183,7 +183,10 @@ export async function getWorkoutForDate(date: string): Promise<WorkoutPlanWithBl
 
 /**
  * Check active training blocks for a matching day.
- * Returns a "virtual" WorkoutPlanWithBlocks built from the training block template.
+ * When a match is found, MATERIALIZE the training block template into a real
+ * workout_plan + workout_blocks + workout_exercises for that specific date.
+ * This way all the regular editing/delete APIs work on the materialized plan.
+ * The materialized plan is only created once; subsequent calls return the existing plan.
  */
 async function getTrainingBlockDayForDate(date: string): Promise<WorkoutPlanWithBlocks | null> {
   const activeBlocks = await dbAll<TrainingBlock>(
@@ -198,9 +201,8 @@ async function getTrainingBlockDayForDate(date: string): Promise<WorkoutPlanWith
       (targetDate.getTime() - startDate.getTime()) / (24 * 60 * 60 * 1000),
     );
 
-    if (diffDays < 0) continue; // before the block started
-
-    if (!block.is_recurring && diffDays >= block.cycle_days) continue; // one-time block, past the end
+    if (diffDays < 0) continue;
+    if (!block.is_recurring && diffDays >= block.cycle_days) continue;
 
     const dayOffset = diffDays % block.cycle_days;
 
@@ -211,45 +213,49 @@ async function getTrainingBlockDayForDate(date: string): Promise<WorkoutPlanWith
 
     if (!tbDay || tbDay.is_rest_day) continue;
 
-    // Build a virtual WorkoutPlanWithBlocks from the training block day
-    const hydratedDay = await hydrateTrainingBlockDay(tbDay.id);
-    const virtualBlocks: WorkoutBlockWithExercises[] = hydratedDay.blocks.map(
-      (db_) => ({
-        id: db_.id,
-        workout_plan_id: block.id,
-        name: db_.name,
-        block_type: db_.block_type,
-        sort_order: db_.sort_order,
-        exercises: db_.exercises.map((ex) => ({
-          id: ex.id,
-          workout_block_id: db_.id,
-          exercise_id: ex.exercise_id,
-          sets: ex.sets,
-          reps: ex.reps,
-          weight: ex.weight,
-          weight_unit: ex.weight_unit,
-          time_seconds: ex.time_seconds,
-          rpe: ex.rpe,
-          rest_seconds: ex.rest_seconds,
-          is_superset_with_next: ex.is_superset_with_next,
-          reminder: null,
-          comment: null,
-          sort_order: ex.sort_order,
-          exercise: ex.exercise!,
-          last_performance: null, // training block templates don't track last performance
-        })),
-      }),
+    // Check if we already materialized a plan for this date
+    const existingMaterialized = await dbGet<WorkoutPlan>(
+      "SELECT * FROM workout_plans WHERE specific_date = ?",
+      [date],
+    );
+    if (existingMaterialized) {
+      return { ...existingMaterialized, blocks: await hydratePlanBlocks(existingMaterialized.id) };
+    }
+
+    // Materialize: create a real workout_plan for this specific date
+    const planId = crypto.randomUUID();
+    await dbRun(
+      "INSERT INTO workout_plans (id, specific_date) VALUES (?, ?)",
+      [planId, date],
     );
 
-    return {
-      id: `tb-${block.id}-day-${dayOffset}`,
-      specific_date: date,
-      day_of_week: null,
-      is_biweekly: 0,
-      biweekly_start_date: null,
-      created_at: block.created_at,
-      blocks: virtualBlocks,
-    };
+    const hydratedDay = await hydrateTrainingBlockDay(tbDay.id);
+
+    for (const tb of hydratedDay.blocks) {
+      const blockId = crypto.randomUUID();
+      await dbRun(
+        "INSERT INTO workout_blocks (id, workout_plan_id, name, block_type, sort_order) VALUES (?, ?, ?, ?, ?)",
+        [blockId, planId, tb.name, tb.block_type, tb.sort_order],
+      );
+
+      for (const ex of tb.exercises) {
+        const exId = crypto.randomUUID();
+        await dbRun(
+          `INSERT INTO workout_exercises
+           (id, workout_block_id, exercise_id, sets, reps, weight, weight_unit, time_seconds, rpe, rest_seconds, is_superset_with_next, sort_order)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            exId, blockId, ex.exercise_id,
+            ex.sets, ex.reps, ex.weight, ex.weight_unit ?? "lbs",
+            ex.time_seconds, ex.rpe, ex.rest_seconds,
+            ex.is_superset_with_next, ex.sort_order,
+          ],
+        );
+      }
+    }
+
+    // Return the real materialized plan (with real IDs that the edit APIs can use)
+    return { ...(await dbGet<WorkoutPlan>("SELECT * FROM workout_plans WHERE id = ?", [planId]))!, blocks: await hydratePlanBlocks(planId) };
   }
 
   return null;
