@@ -40,3 +40,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 tempapp.db
+tempapp.db-shm
+tempapp.db-wal

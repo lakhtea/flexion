@@ -1,4 +1,5 @@
 import { getTrackerGoals, getTrackerProgress } from "@/lib/tempapp/queries";
+import { toPlain } from "@/lib/tempapp/serialize";
 import { displayWeekRange } from "@/lib/tempapp/date-utils";
 import TrackerClient from "./TrackerClient";
 
@@ -13,8 +14,8 @@ export default async function TrackerPage() {
 
   return (
     <TrackerClient
-      initialGoals={goals}
-      initialProgress={progress}
+      initialGoals={toPlain(goals)}
+      initialProgress={toPlain(progress)}
       weekDisplay={weekDisplay}
     />
   );

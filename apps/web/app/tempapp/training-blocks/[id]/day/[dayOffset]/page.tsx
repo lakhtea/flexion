@@ -1,4 +1,5 @@
 import { getTrainingBlock } from "@/lib/tempapp/queries";
+import { toPlain } from "@/lib/tempapp/serialize";
 import { notFound } from "next/navigation";
 import DayEditorClient from "./DayEditorClient";
 
@@ -23,5 +24,5 @@ export default async function DayEditorPage({
     notFound();
   }
 
-  return <DayEditorClient block={block} day={day} />;
+  return <DayEditorClient block={toPlain(block)} day={toPlain(day)} />;
 }

@@ -1,5 +1,6 @@
 import { getWorkoutForDate } from "@/lib/tempapp/queries";
 import { toDateString } from "@/lib/tempapp/date-utils";
+import { toPlain } from "@/lib/tempapp/serialize";
 import TodayClient from "./TodayClient";
 
 export const dynamic = "force-dynamic";
@@ -8,5 +9,5 @@ export default async function TodayPage() {
   const date = toDateString(new Date());
   const plan = await getWorkoutForDate(date);
 
-  return <TodayClient initialPlan={plan} date={date} />;
+  return <TodayClient initialPlan={toPlain(plan)} date={date} />;
 }

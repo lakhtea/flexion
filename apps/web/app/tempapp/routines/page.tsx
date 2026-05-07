@@ -1,4 +1,5 @@
 import { getRoutines } from "@/lib/tempapp/queries";
+import { toPlain } from "@/lib/tempapp/serialize";
 import RoutinesClient from "./RoutinesClient";
 
 export const dynamic = "force-dynamic";
@@ -6,5 +7,5 @@ export const dynamic = "force-dynamic";
 export default async function RoutinesPage() {
   const routines = await getRoutines();
 
-  return <RoutinesClient initialRoutines={routines} />;
+  return <RoutinesClient initialRoutines={toPlain(routines)} />;
 }

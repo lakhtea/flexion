@@ -1,4 +1,5 @@
 import { getWorkoutForDate, getWorkoutPlan } from "@/lib/tempapp/queries";
+import { toPlain } from "@/lib/tempapp/serialize";
 import type { WorkoutPlanWithBlocks } from "@/lib/tempapp/types";
 import PlanEditorClient from "./PlanEditorClient";
 
@@ -22,5 +23,5 @@ export default async function PlanEditorPage({
   }
 
   // If no plan exists yet, pass null — the client will create one on first mutation
-  return <PlanEditorClient key={plan?.id ?? date} initialPlan={plan} date={date} />;
+  return <PlanEditorClient key={plan?.id ?? date} initialPlan={toPlain(plan)} date={date} />;
 }

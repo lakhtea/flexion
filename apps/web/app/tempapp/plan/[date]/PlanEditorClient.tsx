@@ -54,6 +54,20 @@ export default function PlanEditorClient({ initialPlan, date, embedded }: PlanEd
   const [plan, setPlan] = useState<WorkoutPlanWithBlocks | null>(initialPlan);
   const [error, setError] = useState<string | null>(null);
 
+  /** Re-fetch the plan from the API and update local state. */
+  async function reloadPlan() {
+    if (!plan) return;
+    try {
+      const res = await fetch(`/api/tempapp/workout-plans/${plan.id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setPlan(data);
+      }
+    } catch {
+      // silent — the UI still shows the last known state
+    }
+  }
+
   // Add block form
   const [showAddBlock, setShowAddBlock] = useState(false);
   const [newBlockType, setNewBlockType] = useState<string>("strength");
@@ -109,7 +123,7 @@ export default function PlanEditorClient({ initialPlan, date, embedded }: PlanEd
       if (!res.ok) throw new Error("Failed to add block");
       setShowAddBlock(false);
       setNewBlockName("");
-      router.refresh();
+      reloadPlan();
     } catch (e) {
       setError(e instanceof Error ? e.message : "An error occurred");
     }
@@ -121,7 +135,7 @@ export default function PlanEditorClient({ initialPlan, date, embedded }: PlanEd
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Failed to delete block");
-      router.refresh();
+      reloadPlan();
     } catch (e) {
       setError(e instanceof Error ? e.message : "An error occurred");
     }
@@ -134,7 +148,7 @@ export default function PlanEditorClient({ initialPlan, date, embedded }: PlanEd
 
     const ok = await submitReorder("/api/tempapp/workout-blocks/reorder", "blocks", ordered);
     if (ok) {
-      router.refresh();
+      reloadPlan();
     } else {
       setError("Failed to reorder blocks");
     }
@@ -163,7 +177,7 @@ export default function PlanEditorClient({ initialPlan, date, embedded }: PlanEd
       });
       if (!res.ok) throw new Error("Failed to apply routine");
       setShowRoutinePicker(false);
-      router.refresh();
+      reloadPlan();
     } catch (e) {
       setError(e instanceof Error ? e.message : "An error occurred");
     }
@@ -213,7 +227,7 @@ export default function PlanEditorClient({ initialPlan, date, embedded }: PlanEd
       if (!addRes.ok) throw new Error("Failed to add exercise");
 
       setShowQuickAdd(false);
-      router.refresh();
+      reloadPlan();
     } catch (e) {
       setError(e instanceof Error ? e.message : "An error occurred");
     }
@@ -288,7 +302,7 @@ export default function PlanEditorClient({ initialPlan, date, embedded }: PlanEd
       });
       if (!res.ok) throw new Error("Failed to create routine");
       cancelSelectionMode();
-      router.refresh();
+      reloadPlan();
     } catch (e) {
       setError(e instanceof Error ? e.message : "An error occurred");
     }
@@ -444,7 +458,7 @@ export default function PlanEditorClient({ initialPlan, date, embedded }: PlanEd
             onMoveUp={() => moveBlock(block.id, "up")}
             onMoveDown={() => moveBlock(block.id, "down")}
             onDelete={() => deleteBlock(block.id)}
-            onRefresh={() => router.refresh()}
+            onRefresh={() => reloadPlan()}
             selectionMode={selectionMode}
             selectedExercises={selectedExercises}
             onToggleExercise={toggleExerciseSelection}

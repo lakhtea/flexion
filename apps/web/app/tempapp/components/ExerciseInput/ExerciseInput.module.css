@@ -1,0 +1,251 @@
+.container {
+  border: 1px solid var(--border);
+  background: white;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header ── */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+}
+
+.name {
+  font-weight: 600;
+  font-size: 15px;
+  flex: 1;
+}
+
+.tag {
+  font-size: 11px;
+  padding: 2px 8px;
+  background: var(--border);
+  color: var(--muted);
+}
+
+.tagContext {
+  composes: tag;
+  background: #eff6ff;
+  color: var(--accent);
+}
+
+/* ── Set rows ── */
+.setRow {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 16px;
+  gap: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.setRow:last-child {
+  border-bottom: none;
+}
+
+.setLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.fields {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 80px;
+  min-width: 70px;
+}
+
+.fieldLabel {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.fieldInput {
+  padding: 8px;
+  border: 1px solid var(--border);
+  font-size: 15px;
+  font-weight: 600;
+  text-align: center;
+  width: 100%;
+  background: white;
+}
+
+.fieldInput:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+/* ── Diff display ── */
+.diff {
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-height: 16px;
+}
+
+.diffUp {
+  composes: diff;
+  color: #16a34a;
+}
+
+.diffDown {
+  composes: diff;
+  color: #dc2626;
+}
+
+.diffSame {
+  composes: diff;
+  color: var(--muted);
+}
+
+.diffNone {
+  composes: diff;
+  color: transparent;
+}
+
+.diffArrow {
+  font-size: 10px;
+}
+
+.diffPrev {
+  opacity: 0.7;
+}
+
+.diffDelta {
+  font-weight: 600;
+}
+
+/* ── Rest separator ── */
+.restRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 16px;
+  background: var(--bg);
+}
+
+.restLine {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.restLabel {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.restInput {
+  width: 50px;
+  padding: 2px 4px;
+  border: 1px solid var(--border);
+  font-size: 12px;
+  text-align: center;
+  background: white;
+}
+
+.restInput:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+/* ── Footer actions ── */
+.footer {
+  display: flex;
+  gap: 8px;
+  padding: 10px 16px;
+  align-items: center;
+}
+
+.addBtn {
+  padding: 6px 12px;
+  border: 1px dashed var(--border);
+  background: none;
+  color: var(--accent);
+  font-size: 13px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.addBtn:hover {
+  background: var(--bg-secondary);
+}
+
+.removeBtn {
+  padding: 6px 12px;
+  border: 1px dashed var(--border);
+  background: none;
+  color: var(--danger);
+  font-size: 13px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.removeBtn:hover {
+  background: #fef2f2;
+}
+
+/* ── Comment ── */
+.commentRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-top: 1px solid var(--border);
+}
+
+.commentInput {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  font-size: 13px;
+  background: white;
+}
+
+.commentInput:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+.commentCount {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* ── Responsive ── */
+@media (max-width: 599px) {
+  .fields {
+    gap: 4px;
+  }
+
+  .field {
+    flex: 1 1 60px;
+    min-width: 55px;
+  }
+
+  .fieldInput {
+    padding: 6px;
+    font-size: 14px;
+  }
+}

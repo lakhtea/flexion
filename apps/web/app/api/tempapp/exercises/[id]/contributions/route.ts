@@ -78,3 +78,35 @@ export async function POST(
     );
   }
 }
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    await ensureSchema();
+    const { id: exercise_id } = await params;
+    const body = await request.json();
+    const { id } = body;
+
+    if (!id) {
+      return Response.json({ error: "id is required" }, { status: 400 });
+    }
+
+    const result = await dbRun(
+      "DELETE FROM exercise_tracker_contributions WHERE id = ? AND exercise_id = ?",
+      [id, exercise_id]
+    );
+
+    if (result.changes === 0) {
+      return Response.json({ error: "Contribution not found" }, { status: 404 });
+    }
+
+    return Response.json({ success: true });
+  } catch (e) {
+    return Response.json(
+      { error: e instanceof Error ? e.message : "Unknown error" },
+      { status: 500 }
+    );
+  }
+}

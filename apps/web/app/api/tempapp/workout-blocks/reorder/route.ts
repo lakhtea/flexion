@@ -6,19 +6,19 @@ export async function PUT(request: Request) {
   try {
     await ensureSchema();
     const body = await request.json();
-    const { ids } = body;
+    const { blocks } = body;
 
-    if (!Array.isArray(ids)) {
+    if (!Array.isArray(blocks)) {
       return Response.json(
-        { error: "ids must be an array" },
+        { error: "blocks must be an array of { id, sort_order }" },
         { status: 400 }
       );
     }
 
     await dbBatch(
-      ids.map((id: string, i: number) => ({
+      blocks.map((item: { id: string; sort_order: number }) => ({
         sql: "UPDATE workout_blocks SET sort_order = ? WHERE id = ?",
-        args: [i, id],
+        args: [item.sort_order, item.id],
       }))
     );
 

@@ -50,8 +50,8 @@ export default function HistoryClient({ exercises }: HistoryClientProps) {
     setError(null);
     const params = new URLSearchParams();
     if (selectedExercise) params.set("exercise_id", selectedExercise);
-    if (startDate) params.set("start_date", startDate);
-    if (endDate) params.set("end_date", endDate);
+    if (startDate) params.set("date_from", startDate);
+    if (endDate) params.set("date_to", endDate);
     if (blockType) params.set("block_type", blockType);
     params.set("limit", String(HISTORY_PAGE_SIZE));
     params.set("offset", String(pageNum * HISTORY_PAGE_SIZE));
